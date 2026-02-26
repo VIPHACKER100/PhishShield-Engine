@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="PhishShield Engine — AI-powered email security and threat intelligence platform." />
+    <title>PhishShield Engine | AI Email Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0b0f19;
+            --surface: #131825;
+            --surface-hover: #1a2035;
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #e2e8f0;
+            --text-muted: #8892a4;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --green: #22c55e;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        /* ---- Header ---- */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+            background-size: 200% auto;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                background-position: 0% center;
+            }
+
+            50% {
+                background-position: 100% center;
+            }
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: .5rem;
+            font-size: .95rem;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 100%;
+            max-width: 680px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+            backdrop-filter: blur(12px);
+        }
+
+        .card+.card {
+            margin-top: 1.5rem;
+        }
+
+        /* ---- Textarea ---- */
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: .5rem;
+            font-size: .9rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 160px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            padding: 1rem;
+            font-family: inherit;
+            font-size: .95rem;
+            resize: vertical;
+            transition: border-color .2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ---- Model select ---- */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        select {
+            flex: 1;
+            min-width: 140px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            padding: .65rem 1rem;
+            font-family: inherit;
+            font-size: .9rem;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* ---- Button ---- */
+        .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: .7rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: .95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 18px var(--accent-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-sm {
+            padding: .4rem .9rem;
+            font-size: .8rem;
+            min-width: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-hover);
+            color: var(--text-muted);
+        }
+
+        .btn-sm:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .btn-sm.success {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-sm.danger {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* ---- Result ---- */
+        .result-container {
+            margin-top: 1.5rem;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height .4s ease, opacity .3s ease;
+        }
+
+        .result-container.show {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .result-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .result-box.spam {
+            background: rgba(239, 68, 68, .08);
+            border: 1px solid rgba(239, 68, 68, .25);
+        }
+
+        .result-box.ham {
+            background: rgba(34, 197, 94, .08);
+            border: 1px solid rgba(34, 197, 94, .25);
+        }
+
+        .result-label {
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .result-box.spam .result-label {
+            color: var(--red);
+        }
+
+        .result-box.ham .result-label {
+            color: var(--green);
+        }
+
+        .result-meta {
+            color: var(--text-muted);
+            margin-top: .5rem;
+            font-size: .85rem;
+        }
+
+        /* ---- Security Scan Panel ---- */
+        .security-panel {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .security-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .security-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .risk-badge {
+            padding: .2rem .6rem;
+            border-radius: 6px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .risk-low {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+        }
+
+        .risk-suspicious {
+            background: rgba(245, 158, 11, .15);
+            color: var(--orange);
+        }
+
+        .risk-high {
+            background: rgba(239, 68, 68, .15);
+            color: var(--red);
+        }
+
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: .75rem;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
+        .security-item.active {
+            color: var(--text);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .dot.active.danger {
+            background: var(--red);
+            box-shadow: 0 0 8px var(--red);
+        }
+
+        .threat-list {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: .75rem;
+        }
+
+        .threat-list h4 {
+            font-size: .8rem;
+            color: var(--text-muted);
+            margin-bottom: .4rem;
+        }
+
+        .threat-list ul {
+            list-style: none;
+            font-size: .8rem;
+            color: var(--red);
+            opacity: 0.9;
+        }
+
+        .threat-list li {
+            margin-bottom: .2rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .threat-list li::before {
+            content: '⚠️';
+            font-size: .7rem;
+        }
+
+        .feedback-row {
+            display: flex;
+            justify-content: center;
+            gap: .75rem;
+            margin-top: 1rem;
+        }
+
+        .feedback-msg {
+            color: var(--accent);
+            font-size: .8rem;
+            margin-top: .5rem;
+            display: none;
+        }
+
+        .feedback-msg.show {
+            display: block;
+        }
+
+        /* ---- Spinner ---- */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, .2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ---- Nav ---- */
+        .nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: .9rem;
+            padding: .4rem .8rem;
+            border-radius: 8px;
+            transition: all .2s;
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            color: var(--text);
+            background: var(--surface-hover);
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: .8rem;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ---- Error ---- */
+        .error-msg {
+            color: var(--red);
+            margin-top: 1rem;
+            font-size: .9rem;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="nav">
+        <a href="/" class="active">Classifier</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/docs">API Docs</a>
+    </nav>
+
+    <div class="header">
+        <h1>🛡️ PhishShield Engine</h1>
+        <p>Advanced AI defense against Phishing, Spam, and Identity Spoofing.</p>
+    </div>
+
+    <div class="card">
+        <label for="emailText">Email Content</label>
+        <textarea id="emailText" placeholder="Paste your email text here…"></textarea>
+
+        <!-- Phase 54: Advanced Headers Input -->
+        <div style="margin-top: 10px;">
+            <button class="btn btn-sm" style="background: transparent; color: #a1a1aa; border: 1px dashed #3f3f46;"
+                onclick="document.getElementById('headerWrapper').style.display='block'; this.style.display='none'">+
+                Add Email Headers (Deep Scan)</button>
+            <div id="headerWrapper" style="display:none; margin-top: 5px;">
+                <label for="headerText" style="font-size: 0.75rem; color: var(--primary);">Raw Headers
+                    (Optional)</label>
+                <textarea id="headerText" style="height: 60px; font-family: monospace; font-size: 0.75rem;"
+                    placeholder="Paste From, Return-Path, SPF results here..."></textarea>
+            </div>
+        </div>
+
+        <div class="controls">
+            <select id="modelSelect">
+                <option value="">Auto (Best Model)</option>
+                <option value="naive_bayes">Naive Bayes</option>
+                <option value="svm">SVM</option>
+                <option value="decision_tree">Decision Tree</option>
+                <option value="ensemble_model">Ensemble</option>
+            </select>
+            <button class="btn btn-primary" id="classifyBtn" onclick="classify()">
+                <span id="btnText">Classify</span>
+            </button>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="result-box" id="resultBox">
+                <div class="result-label" id="resultLabel"></div>
+                <div class="result-meta" id="resultMeta"></div>
+
+                <!-- Phase 50: Security Visualization -->
+                <div class="security-panel" id="securityPanel" style="display:none">
+                    <div class="security-header">
+                        <span class="security-title">🛡️ Security Scan</span>
+                        <span id="riskBadge" class="risk-badge">RISK: 0</span>
+                    </div>
+                    <div class="security-grid" id="securityGrid">
+                        <div class="security-item" id="flag-homograph"><span class="dot"></span> Homograph</div>
+                        <div class="security-item" id="flag-script"><span class="dot"></span> Mixed Scripts</div>
+                        <div class="security-item" id="flag-url"><span class="dot"></span> Suspicious URL</div>
+                        <div class="security-item" id="flag-ip"><span class="dot"></span> IP Address Link</div>
+                        <div class="security-item" id="flag-brand"><span class="dot"></span> Brand Spoof</div>
+                        <div class="security-item" id="flag-behavior"><span class="dot"></span> Behavioral Threat</div>
+                        <div class="security-item" id="flag-header"><span class="dot"></span> Header Spoof</div>
+                        <div class="security-item" id="flag-domain"><span class="dot"></span> Domain Risk</div>
+                        <div class="security-item" id="flag-obfuscation"><span class="dot"></span> Obfuscation</div>
+                    </div>
+
+                    <!-- Phase 58: Explainability Summary -->
+                    <div id="explanationSection"
+                        style="display:none; margin-top:15px; padding:15px; background: rgba(0,0,0,0.2); border-left: 3px solid var(--primary); border-radius: 4px;">
+                        <h4
+                            style="margin:0 0 8px 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary);">
+                            Decision Explanation</h4>
+                        <p id="explanationText" style="margin:0; font-size: 0.9rem; line-height: 1.5; color: #d1d1eb;">
+                        </p>
+                    </div>
+
+                    <!-- Phase 63: Forensic Deep Dive -->
+                    <div id="forensicSection"
+                        style="display:none; margin-top:15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                        <button class="btn btn-sm"
+                            style="width:100%; background:rgba(255,255,255,0.05); color:#a1a1aa; border:1px solid rgba(255,255,255,0.1);"
+                            onclick="toggleForensics()">🔍 Toggle Forensic Deep Dive</button>
+                        <div id="forensicDrawer"
+                            style="display:none; margin-top:15px; font-size:0.8rem; background:rgba(0,0,0,0.3); border-radius:8px; padding:15px;">
+                            <div class="security-grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="forensic-card">
+                                    <div style="color:var(--primary); font-weight:bold; margin-bottom:5px;">Brand
+                                        Metrics</div>
+                                    <div id="forensic-brand">N/A</div>
+                                </div>
+                                <div class="forensic-card">
+                                    <div style="color:var(--primary); font-weight:bold; margin-bottom:5px;">Behavioral
+                                        Signals</div>
+                                    <div id="forensic-behavior">N/A</div>
+                                </div>
+                                <div class="forensic-card">
+                                    <div style="color:var(--primary); font-weight:bold; margin-bottom:5px;">System
+                                        Distribution</div>
+                                    <div id="forensic-scripts">N/A</div>
+                                </div>
+                                <div class="forensic-card" style="grid-column: span 2;">
+                                    <div style="color:var(--primary); font-weight:bold; margin-bottom:5px;">Intelligence
+                                        Feed</div>
+                                    <div id="forensic-intel">No external hits.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="threat-list" id="threatList" style="display:none">
+                        <h4>Detected Threats</h4>
+                        <ul id="threatItems"></ul>
+                    </div>
+
+                    <div class="feedback-row" id="feedbackRow">
+                        <button class="btn btn-sm success" onclick="sendFeedback(true)" id="correctBtn">&#10003;
+                            Correct</button>
+                        <button class="btn btn-sm danger" onclick="sendFeedback(false)" id="wrongBtn">&#10007;
+                            Wrong</button>
+                    </div>
+                    <div class="feedback-msg" id="feedbackMsg"></div>
+                </div>
+            </div>
+        </div>
+
+        <p class="footer">
+            Powered by <a href="/docs">PhishShield Engine v3.1</a> (Phase 85 Complete)<br>
+            <small>&copy; 2026 Developed by VIPHACKER100 (Aryan Ahirwar)</small>
+        </p>
+
+        <script>
+            async function classify() {
+                const text = document.getElementById('emailText').value.trim();
+                const model = document.getElementById('modelSelect').value || null;
+                const btn = document.getElementById('classifyBtn');
+                const btnText = document.getElementById('btnText');
+                const errorMsg = document.getElementById('errorMsg');
+                const container = document.getElementById('resultContainer');
+                const box = document.getElementById('resultBox');
+                const label = document.getElementById('resultLabel');
+                const meta = document.getElementById('resultMeta');
+
+                errorMsg.classList.remove('show');
+                container.classList.remove('show');
+
+                if (!text) {
+                    errorMsg.textContent = 'Please paste some email text first.';
+                    errorMsg.classList.add('show');
+                    return;
+                }
+
+                btn.disabled = true;
+                btnText.innerHTML = '<span class="spinner"></span> Classifying…';
+
+                try {
+                    const headers = document.getElementById('headerText').value.trim();
+                    const res = await fetch('/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: text,
+                            headers: headers,
+                            model: model
+                        }),
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json();
+                        let msg = 'Prediction failed';
+                        if (typeof err.detail === 'string') msg = err.detail;
+                        else if (Array.isArray(err.detail)) msg = err.detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(' | ');
+                        throw new Error(msg);
+                    }
+
+                    const data = await res.json();
+                    window._lastResult = data;
+                    window._lastText = text;
+
+                    box.className = 'result-box ' + data.prediction;
+                    label.textContent = data.prediction === 'spam' ? '🚫 Spam' : '✅ Ham (Not Spam)';
+
+                    const conf = data.confidence ? `${(data.confidence * 100).toFixed(1)}% confidence` : '';
+                    meta.textContent = `Model: ${data.model_used}${conf ? ' · ' + conf : ''}`;
+
+                    // Update Security Panel
+                    const panel = document.getElementById('securityPanel');
+                    const badge = document.getElementById('riskBadge');
+                    const threats = document.getElementById('threatList');
+                    const threatItems = document.getElementById('threatItems');
+
+                    panel.style.display = 'block';
+                    badge.textContent = `RISK SCORE: ${data.security_risk_score || 0}`;
+                    badge.className = 'risk-badge ' + (data.security_risk_level === 'HIGH RISK' ? 'risk-high' : (data.security_risk_level === 'SUSPICIOUS' ? 'risk-suspicious' : 'risk-low'));
+
+                    // Update flags
+                    const updateFlag = (id, active) => {
+                        const el = document.getElementById(id);
+                        if (!el) return;
+                        const dot = el.querySelector('.dot');
+                        if (active) {
+                            el.classList.add('active');
+                            if (dot) dot.classList.add('active');
+                            if (data.security_risk_level === 'HIGH RISK' && dot) dot.classList.add('danger');
+                        } else {
+                            el.classList.remove('active');
+                            if (dot) dot.classList.remove('active', 'danger');
+                        }
+                    };
+
+                    updateFlag('flag-homograph', data.security_flags?.homograph);
+                    updateFlag('flag-script', data.security_flags?.mixed_script);
+                    updateFlag('flag-url', data.security_flags?.suspicious_url);
+                    updateFlag('flag-ip', data.security_flags?.ip_url);
+                    updateFlag('flag-brand', data.security_flags?.brand_spoof);
+                    updateFlag('flag-behavior', data.security_flags.behavioral_threat);
+                    updateFlag('flag-header', data.security_flags.header_spoof);
+                    updateFlag('flag-domain', data.security_flags.domain_risk);
+                    updateFlag('flag-obfuscation', data.security_flags.obfuscation);
+
+                    // 4. Explanation
+                    if (data.threat_explanation) {
+                        document.getElementById('explanationSection').style.display = 'block';
+                        document.getElementById('explanationText').innerText = data.threat_explanation;
+                    } else {
+                        document.getElementById('explanationSection').style.display = 'none';
+                    }
+
+                    if (data.threat_reasons && data.threat_reasons.length > 0) {
+                        threats.style.display = 'block';
+                        threatItems.innerHTML = data.threat_reasons.map(r => `<li>${r}</li>`).join('');
+                    } else {
+                        threats.style.display = 'none';
+                    }
+
+                    // Phase 63: Forensics
+                    if (data.security_details) {
+                        document.getElementById('forensicSection').style.display = 'block';
+                        const d = data.security_details;
+
+                        document.getElementById('forensic-brand').innerHTML = `
+                        Max Similarity: ${(d.brand?.max_brand_similarity * 100 || 0).toFixed(0)}%<br>
+                        Targets: ${d.brand?.impersonated_brands?.join(', ') || 'None'}
+                    `;
+
+                        document.getElementById('forensic-behavior').innerHTML = `
+                        Score: ${d.behavior?.behavior_score}/100<br>
+                        Urgency: ${d.behavior?.is_urgent ? 'YES' : 'NO'}<br>
+                        Bait: ${d.behavior?.is_reward_bait ? 'YES' : 'NO'}
+                    `;
+
+                        document.getElementById('forensic-scripts').innerHTML = `
+                        Latin: ${(d.scripts?.latin_ratio * 100 || 0).toFixed(1)}%<br>
+                        Greek: ${(d.scripts?.greek_ratio * 100 || 0).toFixed(1)}%<br>
+                        Mixed: ${d.scripts?.mixed_script ? 'YES' : 'NO'}
+                    `;
+
+                        if (d.domain_intel && d.domain_intel.details && d.domain_intel.details.length > 0) {
+                            document.getElementById('forensic-intel').innerHTML = d.domain_intel.details.map(det =>
+                                `<div style="margin-bottom:5px">⚠️ <b>${det.domain}</b>: ${det.threats.join(', ')}</div>`
+                            ).join('');
+                        } else {
+                            document.getElementById('forensic-intel').innerText = "No intelligence matches for extracted domains.";
+                        }
+                    } else {
+                        document.getElementById('forensicSection').style.display = 'none';
+                    }
+
+                    document.getElementById('feedbackRow').style.display = 'flex';
+                    if (data.forensic_intel) document.getElementById('forensic-intel').textContent = data.forensic_intel;
+
+                    if (data.security_details && data.security_details.obfuscation) {
+                        const obs = data.security_details.obfuscation;
+                        if (obs.is_obfuscated) {
+                            document.getElementById('forensic-intel').innerHTML += `<div style="color:var(--danger); margin-top:5px;">⚠️ Obfuscation: ${obs.threats.join(', ')}</div>`;
+                        }
+                    }
+
+                    document.getElementById('feedbackMsg').classList.remove('show');
+                    container.classList.add('show');
+                } catch (e) {
+                    errorMsg.textContent = e.message;
+                    errorMsg.classList.add('show');
+                } finally {
+                    btn.disabled = false;
+                    btnText.textContent = 'Classify';
+                }
+            }
+
+            async function sendFeedback(isCorrect) {
+                const r = window._lastResult;
+                if (!r) return;
+                const correctLabel = isCorrect ? r.prediction : (r.prediction === 'spam' ? 'ham' : 'spam');
+                const feedbackMsg = document.getElementById('feedbackMsg');
+                const feedbackRow = document.getElementById('feedbackRow');
+                try {
+                    await fetch('/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email_text: window._lastText,
+                            predicted_label: r.prediction,
+                            correct_label: correctLabel,
+                            model_used: r.model_used
+                        }),
+                    });
+                    feedbackMsg.textContent = isCorrect ? 'Thanks for confirming!' : 'Thanks! We\'ll use this to improve.';
+                    feedbackMsg.classList.add('show');
+                    feedbackRow.style.display = 'none';
+                } catch (e) {
+                    feedbackMsg.textContent = 'Feedback failed — try again.';
+                    feedbackMsg.classList.add('show');
+                }
+            }
+
+            // Ctrl+Enter shortcut
+            document.getElementById('emailText').addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') classify();
+            });
+            function toggleForensics() {
+                const d = document.getElementById('forensicDrawer');
+                d.style.display = d.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Email Spam Classifier — Analytics Dashboard" />
+    <title>Dashboard — Email Spam Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0b0f19; --surface: #131825; --surface-hover: #1a2035;
+            --border: rgba(255,255,255,0.06); --text: #e2e8f0; --text-muted: #8892a4;
+            --accent: #6366f1; --accent-glow: rgba(99,102,241,0.25);
+            --green: #22c55e; --red: #ef4444; --orange: #f59e0b; --blue: #3b82f6;
+            --radius: 16px;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 2rem 1rem;
+        }
+        .nav { display: flex; gap: 1rem; margin-bottom: 2rem; justify-content: center; }
+        .nav a {
+            color: var(--text-muted); text-decoration: none; font-size: .9rem;
+            padding: .4rem .8rem; border-radius: 8px; transition: all .2s;
+        }
+        .nav a:hover, .nav a.active { color: var(--text); background: var(--surface-hover); }
+
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a78bfa);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header p { color: var(--text-muted); margin-top: .4rem; font-size: .9rem; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,.3);
+        }
+        .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-muted); }
+        .card.full { grid-column: 1 / -1; }
+
+        .metric { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+        .metric-value { font-size: 2.2rem; font-weight: 700; }
+        .metric-label { font-size: .8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .metrics-row { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1.5rem; }
+
+        table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+        th, td { padding: .65rem .8rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 500; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+        tr:last-child td { border-bottom: none; }
+
+        .badge {
+            display: inline-block; padding: .15rem .5rem; border-radius: 6px;
+            font-size: .75rem; font-weight: 600;
+        }
+        .badge-best { background: rgba(34,197,94,.15); color: var(--green); }
+
+        .loading { text-align: center; color: var(--text-muted); padding: 3rem 0; }
+        canvas { max-height: 280px; }
+
+        .footer { margin-top: 3rem; color: var(--text-muted); font-size: .8rem; text-align: center; }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/">Classifier</a>
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/docs">API Docs</a>
+</nav>
+
+<div class="header">
+    <h1>📊 Analytics Dashboard</h1>
+    <p>Model performance metrics and comparison</p>
+</div>
+
+<div id="content" class="loading">Loading metrics…</div>
+
+<p class="footer">Email Spam Classifier v2.0</p>
+
+<script>
+async function loadDashboard() {
+    const container = document.getElementById('content');
+    try {
+        const res = await fetch('/analytics');
+        const data = await res.json();
+        if (data.error) { container.innerHTML = `<div class="card"><p>${data.error}</p></div>`; return; }
+
+        const best = data.best_model;
+        const results = data.results;
+
+        // Find best model metrics
+        const bestMetrics = results.find(r => r.model === best) || results[0];
+
+        container.className = 'grid';
+        container.innerHTML = `
+            <!-- Best Model Card -->
+            <div class="card">
+                <h2>🏆 Best Model</h2>
+                <div class="metric">
+                    <div class="metric-value" style="color: var(--accent)">${formatName(best)}</div>
+                    <div class="metric-label">highest F1-score</div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Card -->
+            <div class="card">
+                <h2>Key Metrics (Best Model)</h2>
+                <div class="metrics-row">
+                    <div class="metric">
+                        <div class="metric-value" style="color: var(--green)">${(bestMetrics.accuracy * 100).toFixed(1)}%</div>
+                        <div class="metric-label">Accuracy</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" style="color: var(--blue)">${(bestMetrics.f1_score * 100).toFixed(1)}%</div>
+                        <div class="metric-label">F1 Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Card -->
+            <div class="card full">
+                <h2>Model Comparison</h2>
+                <canvas id="compChart"></canvas>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card full">
+                <h2>Detailed Results</h2>
+                <table>
+                    <thead><tr>
+                        <th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                        ${results.map(r => `
+                            <tr>
+                                <td>${formatName(r.model)}</td>
+                                <td>${(r.accuracy * 100).toFixed(1)}%</td>
+                                <td>${(r.precision * 100).toFixed(1)}%</td>
+                                <td>${(r.recall * 100).toFixed(1)}%</td>
+                                <td>${(r.f1_score * 100).toFixed(1)}%</td>
+                                <td>${r.model === best ? '<span class="badge badge-best">BEST</span>' : ''}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // Render chart
+        const ctx = document.getElementById('compChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: results.map(r => formatName(r.model)),
+                datasets: [
+                    { label: 'Accuracy', data: results.map(r => r.accuracy), backgroundColor: 'rgba(34,197,94,.6)' },
+                    { label: 'Precision', data: results.map(r => r.precision), backgroundColor: 'rgba(59,130,246,.6)' },
+                    { label: 'Recall', data: results.map(r => r.recall), backgroundColor: 'rgba(245,158,11,.6)' },
+                    { label: 'F1', data: results.map(r => r.f1_score), backgroundColor: 'rgba(99,102,241,.6)' },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#8892a4' } } },
+                scales: {
+                    x: { ticks: { color: '#8892a4' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { min: 0, max: 1, ticks: { color: '#8892a4', callback: v => (v*100)+'%' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                },
+            },
+        });
+    } catch (e) {
+        container.innerHTML = `<div class="card"><p style="color:var(--red)">Failed to load metrics: ${e.message}</p></div>`;
+    }
+}
+
+function formatName(name) {
+    return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

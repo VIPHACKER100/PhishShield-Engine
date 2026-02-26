@@ -1,0 +1,14 @@
+[
+  {
+    "version": "run_20260226_212932",
+    "filename": "run_20260226_212932_emails.csv",
+    "source": "Training run at 2026-02-26 21:29:32.389205",
+    "date_added": "2026-02-26T15:59:32.400960+00:00",
+    "num_samples": 1000,
+    "columns": [
+      "text",
+      "label"
+    ],
+    "preprocessing_steps": []
+  }
+]
