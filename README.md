@@ -126,6 +126,8 @@ Detailed technical documentation is available in the `docs/` directory:
 - [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, and architecture details.
 - [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference.
 - [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring the Google Cloud API for automatic inbox scanning.
+- [Enterprise Deployment](docs/ENTERPRISE_DEPLOYMENT.md): MLOps, scalability, and disaster recovery specs.
+- [CLI Reference](docs/CLI_REFERENCE.md): Command-line toolkit guide for `manage.py`.
 
 ---
 

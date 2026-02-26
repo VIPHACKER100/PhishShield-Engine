@@ -99,16 +99,33 @@ Submit ground-truth corrections to trigger automated retraining.
 }
 ```
 
+### 7. Export Security Report
+
+Provides a complete, downloadable forensic breakdown of an email's threat indicators.
+
+- **URL**: `/export-report`
+- **Method**: `POST`
+- **Payload**: `{ "text": "email content...", "headers": "From: ..." }`
+- **Response**: Full JSON forensic mapping containing timestamps, extracted URLs, and risk breakdown.
+
+### 8. A/B Testing Analytics
+
+Returns the real-time split testing summary for active models.
+
+- **URL**: `/ab/summary`
+- **Method**: `GET`
+- **Response**: `{ "naive_bayes": {"count": 10}, "svm": {"count": 12} }`
+
 ---
 
 ## 🛠️ Utility Endpoints
 
-### 7. Health Checks
+### 9. Health Checks
 
 - `GET /health`: Core system status.
 - `GET /health/ready`: Checks model readiness and DB connections.
 
-### 8. Interactive Documentation
+### 10. Interactive Documentation
 
 - `GET /docs`: Swagger UI for interactive testing.
 - `GET /redoc`: ReDoc clean documentation view.
