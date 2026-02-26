@@ -49,4 +49,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t email-spam-classifier:latest .
+        run: docker build -t phishshield-engine:latest .

@@ -218,6 +218,25 @@ async def predict_batch_endpoint(body: BatchPredictRequest, request: Request, us
         raise HTTPException(status_code=500, detail="Internal prediction error")
 
 
+@app.post("/export-report")
+async def export_report_endpoint(body: PredictRequest):
+    """Phase 63: Forensic Analysis Export."""
+    from src.security.risk_scoring import calculate_security_risk
+    from src.security.url_extractor import extract_urls
+    try:
+        analysis = calculate_security_risk(body.text, body.headers or "")
+        report = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "original_email": body.text,
+            "extracted_urls": extract_urls(body.text),
+            "forensic_analysis": analysis
+        }
+        return JSONResponse(content=report)
+    except Exception as e:
+        logger.error("Export report error: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to generate report")
+
+
 # ---------------------------------------------------------------------------
 # Feedback endpoint
 # ---------------------------------------------------------------------------

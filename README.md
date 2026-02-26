@@ -6,7 +6,7 @@
 
 ## 🚀 GitHub Repository
 
-```
+```text
 PhishShield-Engine
 ```
 
@@ -40,7 +40,7 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 ### ⚙️ Operations & Scalability
 
 - **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database).
-- **Gmail Integration (Phase 83)**: Automated inbox scanning and threat response using secure Google OAuth2 flows.
+- **Gmail Integration (Phase 83)**: Automated inbox scanning using secure Google OAuth2 flows. [Read the Integration Guide](docs/GMAIL_INTEGRATION.md).
 - **Developer CLI**: Productivity tool for managing local blocklists, monitoring metrics, and launching the platform.
 - **YAML Governance**: Centralized configuration for security weights, risk thresholds, and compliance policies.
 
@@ -54,7 +54,9 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate    # macOS/Linux
-pip install -r requirements.txt
+
+# Install the engine as a package
+pip install -e .
 ```
 
 ### 2. Model Initialization
@@ -76,19 +78,27 @@ Open [http://localhost:8000](http://localhost:8000) for the Interactive Security
 
 ## 📂 Project Structure
 
-```
+```text
 PhishShield-Engine/
-├── src/
-│   ├── api/                   # FastAPI server & Cinematic UI
-│   ├── security/              # Forensic Engines (URL, Homograph, Brand, Obfuscation)
-│   ├── models/                # ML Inference, Training & XAI
-│   ├── integrations/          # Gmail API Scanning Client
-│   └── utils/                 # Config Loader & Compliance Tools
+├── .github/                   # CI/CD Workflows (GitHub Actions)
 ├── cli/                       # Developer Management Tool (manage.py)
 ├── config/                    # Global Governance (config.yaml)
-├── data/                      # Persistent Threat Intelligence & Feedback
-├── models/                    # Trained Model Artifacts (.pkl)
-├── scripts/                   # Retraining, Chaos Monkey & Automation
+├── data/                      # Persistent Threat Intelligence, Databases & Feedback
+├── docs/                      # Technical Documentation (API & Developer Guide)
+├── models/                    # Trained Model Artifacts (.pkl) & Metrics
+├── scripts/                   # Retraining, Chaos Monkey & Pipeline Automation
+├── src/                       # Source Code
+│   ├── api/                   # FastAPI Server & Cinematic UI
+│   ├── features/              # Feature Engineering & Vectorization
+│   ├── integrations/          # Gmail API Scanning Client
+│   ├── models/                # ML Inference, Training, Evaluating & XAI
+│   ├── preprocessing/         # Text Cleaning & Normalization
+│   ├── security/              # Forensic Engines (URL, Homograph, Brand, Obfuscation)
+│   └── utils/                 # Config Loader, Logger & Compliance Tools
+├── tests/                     # Unit & Integration Testing Suite (pytest)
+├── docker-compose.yml         # Container Orchestration
+├── Dockerfile                 # Docker Image Generation
+├── requirements.txt           # Python Dependencies
 └── README.md
 ```
 
@@ -111,11 +121,16 @@ This tool is for educational and defensive security purposes only. Licensed unde
 
 Detailed technical documentation is available in the `docs/` directory:
 
-- [Developer Guide](docs/developer_guide.md): Architecture, setup, and contribution workflows.
+- [System Architecture](docs/ARCHITECTURE.md): High-level system design diagram and flow.
+- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the 9 forensic threat scanners.
+- [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, and architecture details.
 - [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference.
+- [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring the Google Cloud API for automatic inbox scanning.
 
 ---
 
 ## ⭐ Contribute
 
-Contributions are welcome! Please open an issue or submit a pull request to help improve email security for everyone.
+Contributions are highly welcome! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) to log setup PRs and get started.
+
+If this project helps you, please consider giving it a star!
