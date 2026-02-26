@@ -1,0 +1,2 @@
+2026-02-26T22:51:24.707974 | WARNING | ['Url contains direct IP address', 'SPF authentication failed', 'From domain mismatch with Return-Path']
+2026-02-26T22:54:02.837584 | WARNING | ['Url contains direct IP address', 'SPF authentication failed', 'From domain mismatch with Return-Path']

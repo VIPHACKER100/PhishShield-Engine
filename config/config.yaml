@@ -1,0 +1,35 @@
+
+# Security Scoring Weights
+security:
+  weights:
+    homograph: 40
+    mixed_script: 25
+    brand_spoof: 45
+    behavioral_threshold: 40
+    behavioral_low: 15
+    ip_url: 45
+    suspicious_tld: 20
+    url_shortener: 15
+    multiple_urls: 10
+    domain_blacklist: 60
+    header_spoof: 40
+  thresholds:
+    high_risk: 75
+    suspicious: 30
+
+# Model Paths & Settings
+models:
+  default: "naive_bayes"
+  base_path: "data"
+  registry: "models/registry.json"
+
+# API Settings
+api:
+  rate_limit: 10
+  max_text_length: 5000
+  port: 8000
+
+# Compliance
+compliance:
+  retention_days: 30
+  log_path: "logs/compliance.log"
