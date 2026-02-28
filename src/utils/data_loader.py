@@ -90,16 +90,69 @@ def generate_sample_dataset(path: str, n: int = 1000) -> pd.DataFrame:
     return df
 
 
+# Common alternative column names that map to the canonical 'text' / 'label' columns
+_TEXT_ALIASES = ["message", "email", "body", "content", "subject", "v2"]
+_LABEL_ALIASES = ["spam", "category", "class", "type", "v1", "target", "sentiment"]
+
+
 def load_dataset(path: str) -> pd.DataFrame:
     """
-    Load a CSV dataset and validate that it contains the required columns.
+    Load a CSV dataset and validate (or auto-map) required columns.
+
+    The function accepts any CSV that has *at least* a text column.  It will
+    try to locate columns named ``text`` and ``label`` first, then fall back
+    to a list of well-known aliases so that popular public datasets (Enron,
+    SpamAssassin, SMS Spam Collection, Kaggle spam datasets …) work without
+    pre-processing.
+
+    If no label column can be found at all, every row is labelled ``'ham'``
+    and a warning is emitted — useful for inference-only datasets.
     """
     if not os.path.exists(path):
         raise FileNotFoundError(f"Dataset not found: {path}")
+
     df = pd.read_csv(path)
-    for col in ("text", "label"):
-        if col not in df.columns:
-            raise ValueError(f"Dataset missing required column: '{col}'")
+    cols = set(df.columns.str.strip().str.lower())
+    # Normalise column names to lowercase for alias matching
+    df.columns = df.columns.str.strip()
+
+    # ── text column ──────────────────────────────────────────────────────────
+    if "text" not in df.columns:
+        matched = next(
+            (a for a in _TEXT_ALIASES if a in df.columns or a in cols), None
+        )
+        if matched is None:
+            # last resort: pick the first string-typed column
+            str_cols = [c for c in df.columns if df[c].dtype == object]
+            if not str_cols:
+                raise ValueError(
+                    f"Cannot find a suitable text column in {path}. "
+                    f"Columns present: {list(df.columns)}"
+                )
+            matched = str_cols[0]
+            logger.warning(
+                "No recognised text column found — using '%s' as 'text'.", matched
+            )
+        else:
+            logger.info("Remapping column '%s' → 'text'.", matched)
+        df = df.rename(columns={matched: "text"})
+
+    # ── label column ─────────────────────────────────────────────────────────
+    if "label" not in df.columns:
+        matched = next(
+            (a for a in _LABEL_ALIASES if a in df.columns or a in cols), None
+        )
+        if matched is None:
+            logger.warning(
+                "No label column found in %s — defaulting all rows to 'ham'. "
+                "The model will be trained / evaluated without ground-truth labels.",
+                path,
+            )
+            df["label"] = "ham"
+        else:
+            logger.info("Remapping column '%s' → 'label'.", matched)
+            df = df.rename(columns={matched: "label"})
+
     logger.info("Loaded dataset with %d rows from %s", len(df), path)
     return df
 
