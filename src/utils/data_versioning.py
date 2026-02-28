@@ -15,8 +15,15 @@ METADATA_PATH = os.path.join(VERSIONS_DIR, "metadata.json")
 def _load_metadata() -> list[dict]:
     os.makedirs(VERSIONS_DIR, exist_ok=True)
     if os.path.exists(METADATA_PATH):
-        with open(METADATA_PATH) as f:
-            return json.load(f)
+        try:
+            with open(METADATA_PATH) as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
+                elif isinstance(data, dict):
+                    return list(data.values()) if data else []
+        except Exception:
+            pass
     return []
 
 

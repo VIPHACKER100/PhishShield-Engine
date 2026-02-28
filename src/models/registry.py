@@ -14,8 +14,15 @@ REGISTRY_PATH = os.path.join(REGISTRY_DIR, "registry.json")
 def _load_registry() -> list[dict]:
     os.makedirs(REGISTRY_DIR, exist_ok=True)
     if os.path.exists(REGISTRY_PATH):
-        with open(REGISTRY_PATH) as f:
-            return json.load(f)
+        try:
+            with open(REGISTRY_PATH) as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
+                elif isinstance(data, dict):
+                    return list(data.values()) if data else []
+        except Exception:
+            pass
     return []
 
 

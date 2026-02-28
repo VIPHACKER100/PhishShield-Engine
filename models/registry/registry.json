@@ -1,1 +1,106 @@
-{}
+[
+  {
+    "model_name": "naive_bayes",
+    "version": 1,
+    "algorithm": "naive_bayes",
+    "dataset_version": "run_20260228_230325",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\naive_bayes.pkl",
+    "status": "active",
+    "registered_at": "2026-02-28T17:33:26.100461+00:00"
+  },
+  {
+    "model_name": "svm",
+    "version": 1,
+    "algorithm": "svm",
+    "dataset_version": "run_20260228_230325",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\svm.pkl",
+    "status": "active",
+    "registered_at": "2026-02-28T17:33:26.104310+00:00"
+  },
+  {
+    "model_name": "decision_tree",
+    "version": 1,
+    "algorithm": "decision_tree",
+    "dataset_version": "run_20260228_230325",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\decision_tree.pkl",
+    "status": "active",
+    "registered_at": "2026-02-28T17:33:26.107301+00:00"
+  },
+  {
+    "model_name": "ensemble_model",
+    "version": 1,
+    "algorithm": "VotingClassifier",
+    "dataset_version": "run_20260228_230325",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\ensemble_model.pkl",
+    "status": "active",
+    "registered_at": "2026-02-28T17:33:26.208796+00:00"
+  }
+]

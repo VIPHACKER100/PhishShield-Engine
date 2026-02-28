@@ -1,1 +1,26 @@
-{}
+[
+  {
+    "version": "run_20260228_230208",
+    "filename": "run_20260228_230208_emails.csv",
+    "source": "Training run at 2026-02-28 23:02:08.859423",
+    "date_added": "2026-02-28T17:32:08.874791+00:00",
+    "num_samples": 1000,
+    "columns": [
+      "text",
+      "label"
+    ],
+    "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260228_230325",
+    "filename": "run_20260228_230325_emails.csv",
+    "source": "Training run at 2026-02-28 23:03:25.825360",
+    "date_added": "2026-02-28T17:33:25.835334+00:00",
+    "num_samples": 1000,
+    "columns": [
+      "text",
+      "label"
+    ],
+    "preprocessing_steps": []
+  }
+]
