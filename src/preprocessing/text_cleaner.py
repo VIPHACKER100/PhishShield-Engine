@@ -152,7 +152,8 @@ def to_lowercase(text: str) -> str:
     return text.lower()
 
 def remove_punctuation(text: str) -> str:
-    return _RE_PUNCT.sub(" ", text)
+    s = _RE_PUNCT.sub(" ", text)
+    return _RE_WHITESPACE.sub(" ", s).strip()
 
 def remove_numbers(text: str) -> str:
     return _RE_NUMBER.sub("", text)

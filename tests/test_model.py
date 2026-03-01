@@ -50,9 +50,9 @@ def test_train_model_svm(sample_data):
     assert pred[0] in ("spam", "ham")
 
 
-def test_train_model_decision_tree(sample_data):
+def test_train_model_random_forest(sample_data):
     X, y = sample_data
-    model = train_model(X, y, "decision_tree")
+    model = train_model(X, y, "random_forest")
     pred = model.predict(X[:1])
     assert pred[0] in ("spam", "ham")
 
