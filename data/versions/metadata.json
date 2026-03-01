@@ -34,5 +34,53 @@
       "message"
     ],
     "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260301_012802",
+    "filename": "run_20260301_012802_emails.csv",
+    "source": "Training run at 2026-03-01 01:28:02.722781",
+    "date_added": "2026-02-28T19:59:43.404906+00:00",
+    "num_samples": 517401,
+    "columns": [
+      "file",
+      "message"
+    ],
+    "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260301_014651",
+    "filename": "run_20260301_014651_emails.csv",
+    "source": "Training run at 2026-03-01 01:46:51.684707",
+    "date_added": "2026-02-28T20:17:22.727522+00:00",
+    "num_samples": 517401,
+    "columns": [
+      "file",
+      "message"
+    ],
+    "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260301_015021",
+    "filename": "run_20260301_015021_emails.csv",
+    "source": "Training run at 2026-03-01 01:50:21.767848",
+    "date_added": "2026-02-28T20:21:10.861438+00:00",
+    "num_samples": 517401,
+    "columns": [
+      "file",
+      "message"
+    ],
+    "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260301_113635",
+    "filename": "run_20260301_113635_emails.csv",
+    "source": "Training run at 2026-03-01 11:36:35.160153",
+    "date_added": "2026-03-01T06:07:18.380383+00:00",
+    "num_samples": 517401,
+    "columns": [
+      "file",
+      "message"
+    ],
+    "preprocessing_steps": []
   }
 ]

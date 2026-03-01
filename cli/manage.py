@@ -34,7 +34,7 @@ def main():
 
     if args.command == "serve":
         logger.info("Starting production server on port %d...", args.port)
-        uvicorn.run("src.api.app:app", host="0.0.0.0", port=args.port, reload=True)
+        uvicorn.run("src.api.app:app", host="127.0.0.1", port=args.port, reload=True)
 
     elif args.command == "block":
         from src.security.threat_intel import report_malicious_domain

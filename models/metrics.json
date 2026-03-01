@@ -3,68 +3,36 @@
     {
       "model": "naive_bayes",
       "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
       "confusion_matrix": [
         [
-          100,
-          0
-        ],
-        [
-          0,
-          100
+          10000
         ]
       ]
     },
     {
-      "model": "svm",
+      "model": "random_forest",
       "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
       "confusion_matrix": [
         [
-          100,
-          0
-        ],
-        [
-          0,
-          100
+          10000
         ]
       ]
     },
     {
-      "model": "decision_tree",
+      "model": "lgbm",
       "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
       "confusion_matrix": [
         [
-          100,
-          0
-        ],
-        [
-          0,
-          100
-        ]
-      ]
-    },
-    {
-      "model": "ensemble_model",
-      "accuracy": 1.0,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "confusion_matrix": [
-        [
-          100,
-          0
-        ],
-        [
-          0,
-          100
+          10000
         ]
       ]
     }

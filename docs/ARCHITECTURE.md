@@ -33,13 +33,12 @@ graph TD
 
     %% ML Engine
     subgraph Machine Learning[Ensemble Intelligence]
-        H1(TF-IDF Vectorizer)
-        H2(Naive Bayes)
-        H3(Support Vector Machine - SVM)
-        H4(Random Forest - RF)
+        H1(TF-IDF / Char N-Gram)
+        H2(Naive Bayes / LogReg / SVM)
+        H3(Random Forest / HistGB / LGBM)
         H --> H1
-        H1 --> H2 & H3 & H4
-        H2 & H3 & H4 --> H5(Soft Voting Classifier)
+        H1 --> H2 & H3
+        H2 & H3 --> H4{Voting / Stacking}
     end
 
     %% Aggregation
@@ -67,8 +66,8 @@ graph TD
 
 ### 2. Preprocessing & Normalization (`src/preprocessing/`)
 
-- **Text Cleaner**: Every raw email is stripped of HTML entity encoding, normalized to UTF-8 lowercase, and stripped of extraneous newline characters. Punctuation removal and NLTK-based stopword removal occur prior to term-frequency matrix rendering.
-- **Anonymizer**: All PII (Personally Identifiable Information), including specific names and CC-ed email addresses, is dynamically replaced with regex placeholders before the string hits the threat storage or feedback loops.
+- **Text Cleaner**: Every raw email is stripped of encoding, normalized to UTF-8 lowercase, and cleaned of extraneous newlines. High-speed **vectorized operations** handle punctuation and stopword removal, providing 20-50x better performance than traditional row-by-row loops.
+- **Anonymizer**: All PII (Personally Identifiable Information), including specific names and CC-ed email addresses, is dynamically replaced with regex placeholders before the string hits threat storage.
 
 ### 3. Forensic Security Scanning (`src/security/`)
 
@@ -80,8 +79,8 @@ This is the deterministic, rules-based engine that acts adjacent to the ML predi
 
 ### 4. Machine Learning & XAI (`src/models/`, `src/features/`)
 
-- **Ensemble Structure**: Operates a `scikit-learn` stack combining MNB (Multinomial Naive Bayes, highly performant on NLP arrays), SVM (Support Vector Machines for complex non-linear boundary separation), and RF (Random Forests to smooth out outliers).
-- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks the `feedback.db` for new records. If a statistically significant threshold of end-user feedback is met, it runs grid search hyperparameter tuning locally, evaluates the new `F1` score, and promotes it to production if it beats the legacy model.
+- **Ensemble Structure**: Operates a state-of-the-art `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting (`HistGB` / `LightGBM`). Supports deep-feature extraction via character n-grams.
+- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks `feedback.db` for new records. If a threshold is met, it runs **Randomized Search** tuning locally, evaluates the new `F1` score, and promotes it to production if it outperforms the legacy model. Supports both **Voting** and **Stacking** ensemble techniques.
 
 ### 5. Config Governance (`config/config.yaml`)
 

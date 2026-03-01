@@ -22,11 +22,11 @@ pip install -r requirements.txt
 
 ### 2. Model Initialization
 
-You must initialize your models before the first run:
+You must initialize your models before the first run. For a full deep-dive into the training lifecycle, see the [ML Training Guide](file:///C:/Users/vipha/Desktop/PhishShield-Engine/docs/ML_TRAINING_GUIDE.md).
 
 ```bash
-# Generate 5,000 synthetic samples and train the high-performance Ensemble model
-python scripts/train_pipeline.py --generate --n_samples 5000 --ensemble
+# Recommendation: Quick-start on 50,000 samples (fast mode)
+python scripts/train_pipeline.py --generate --fast
 ```
 
 ---
@@ -56,11 +56,13 @@ Handles the entire ML lifecycle from raw data to registered production models.
 | Flag | Default | Description |
 |:---|:---|:---|
 | `--dataset_path` | `data/raw/emails.csv` | Path to the training dataset. |
-| `--model_type` | `tfidf` | Vectorizer algorithm (`tfidf` or `bow`). |
-| `--generate` | (False) | Generates high-fidelity synthetic phishing samples. |
-| `--n_samples` | 1000 | Number of samples to generate if `--generate` is used. |
-| `--tune` | (False) | Triggers GridSearchCV hyperparameter tuning. |
-| `--ensemble` | (False) | Trains the triple-model VotingClassifier (NB/SVM/RF). |
+| `--vectorizer` | `tfidf` | Algorithm: `tfidf`, `bow`, or `tfidf_char`. |
+| `--sample_size` | (None) | Sub-sample N rows (prevents OOM on large datasets). |
+| `--fast` | (False) | Shortcut: 50k samples + Skip Ensemble. |
+| `--tune` | (False) | Triggers RandomizedSearchCV tuning. |
+| `--ensemble` | (False) | Trains model ensembles (`voting` or `stacking`). |
+| `--ensemble_kind`| `voting` | Choose `voting` (fast) or `stacking` (accurate). |
+| `--generate` | (False) | Generates synthetic phishing samples. |
 
 ### III. Operational Scripts
 
@@ -123,35 +125,40 @@ The evolution of **PhishShield-Engine** followed a rigorous 80-phase roadmap, ca
 
 ### Phase 1–20: Core Infrastructure & Machine Learning
 
-- **Fundamental NLP**: Implementation of TF-IDF and Bag-of-Words vectorizers.
+* **Fundamental NLP**: Implementation of TF-IDF and Bag-of-Words vectorizers.
+
 * **Ensemble ML**: Training of Naive Bayes, SVM, and Random Forest classifiers.
 * **REST Gateway**: Building the initial FastAPI structure and Pydantic models.
 * **Cinematic UI**: Developing the glassmorphic frontend for user interaction.
 
 ### Phase 21–40: Security Foundations & Forensic Scanning
 
-- **URL Intelligence**: Regex-based extraction and basic malicious pattern detection.
+* **URL Intelligence**: Regex-based extraction and basic malicious pattern detection.
+
 * **Homograph Defense**: Detecting IDN (Internationalized Domain Name) spoofing.
 * **Mixed-Script Detection**: Identifying "lookalike" characters from Latin, Greek, and Cyrillic scripts.
 * **Brand Protection (v1)**: Initial fuzzy-matching for top-tier brands like PayPal and Amazon.
 
 ### Phase 41–60: Advanced Phishing Intelligence
 
-- **Header Forensics**: SPF, DKIM, and DMARC analysis for sender authenticity.
+* **Header Forensics**: SPF, DKIM, and DMARC analysis for sender authenticity.
+
 * **Risk Scoring Engine**: Implementation of the 0–100 weighted scoring system.
 * **Explainable AI (XAI)**: Generation of human-readable justifications for security alerts.
 * **Local Threat Hub**: SQLite-backed persistent database for domain blocklisting.
 
 ### Phase 61–75: Enterprise Governance & Operations
 
-- **Configuration Management**: Centralized YAML-based settings for security weights.
+* **Configuration Management**: Centralized YAML-based settings for security weights.
+
 * **Data Governance**: GDPR-ready retention policies and persistent audit logging.
 * **Dockerization**: Containerizing the platform for environment parity and deployment.
 * **Developer CLI**: Building the `manage.py` tool for operational productivity.
 
 ### Phase 76–80: Resilience, Automation & Final Production
 
-- **Feedback Loop**: Implementing automated logic for model retraining based on live user data.
+* **Feedback Loop**: Implementing automated logic for model retraining based on live user data.
+
 * **Chaos Engineering**: Stress-testing system resilience using failure injectors.
 * **Production Verification**: Full-spectrum forensic testing and final brand alignment.
 * **PhishShield Launch**: Rebranding and final stabilization of the production engine.

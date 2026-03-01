@@ -8,6 +8,16 @@ import joblib
 from src.preprocessing.text_cleaner import preprocess_text
 from src.utils.logger import logger
 
+import functools
+
+@functools.lru_cache(maxsize=1)
+def _load_vectorizer(path: str):
+    return joblib.load(path)
+
+@functools.lru_cache(maxsize=5)
+def _load_model(path: str):
+    return joblib.load(path)
+
 _BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "models")
 
 
@@ -24,7 +34,7 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
     """
     Classify a single email text with security scanning.
     """
-    from src.security.risk_scoring import calculate_security_risk, run_security_rules
+    from src.security.risk_scoring import calculate_security_risk
 
     if model_name is None:
         model_name = _default_model_name()
@@ -40,9 +50,9 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
     # 1. Run Security Analysis with optional headers
     security_analysis = calculate_security_risk(text, raw_headers)
     
-    # 2. Run ML Model
-    vectorizer = joblib.load(vectorizer_path)
-    model = joblib.load(model_path)
+    # 2. Run ML Model (using cached loaders)
+    vectorizer = _load_vectorizer(vectorizer_path)
+    model = _load_model(model_path)
 
     cleaned = preprocess_text(text)
     features = vectorizer.transform([cleaned])
@@ -53,7 +63,12 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
     confidence = None
     if hasattr(model, "predict_proba"):
         proba = model.predict_proba(features)[0]
-        confidence = max(proba)
+        confidence = float(max(proba))
+    elif hasattr(model, "decision_function"):
+        # For non-calibrated SVMs (fallback)
+        import numpy as np
+        df = model.decision_function(features)[0]
+        confidence = float(1.0 / (1.0 + np.exp(-abs(df))))
 
     # Rule-based override (Phase 45)
     final_prediction = prediction
