@@ -23,6 +23,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MaxAbsScaler
 
+from src.models.train_models import DenseTransformer
 from src.utils.logger import logger
 
 # ---------------------------------------------------------------------------
@@ -46,6 +47,7 @@ def _base_estimators() -> list[tuple[str, object]]:
             "hgb",
             Pipeline([
                 ("scaler", MaxAbsScaler()),
+                ("dense", DenseTransformer()),
                 ("clf", HistGradientBoostingClassifier(
                     max_iter=200, learning_rate=0.1, max_leaf_nodes=63, random_state=42
                 )),
@@ -55,10 +57,13 @@ def _base_estimators() -> list[tuple[str, object]]:
     if _LGBM_AVAILABLE:
         estimators.append((
             "lgbm",
-            LGBMClassifier(
-                n_estimators=300, learning_rate=0.05,
-                num_leaves=63, n_jobs=-1, random_state=42, verbosity=-1,
-            ),
+            Pipeline([
+                ("scaler", MaxAbsScaler()),
+                ("clf", LGBMClassifier(
+                    n_estimators=300, learning_rate=0.05,
+                    num_leaves=63, n_jobs=-1, random_state=42, verbosity=-1,
+                )),
+            ])
         ))
     return estimators
 

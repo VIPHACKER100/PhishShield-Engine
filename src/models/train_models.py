@@ -33,6 +33,16 @@ from sklearn.preprocessing import MaxAbsScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 from src.utils.logger import logger
 
+class DenseTransformer(BaseEstimator, TransformerMixin):
+    """Simple transformer that converts sparse matrices to dense arrays."""
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        import scipy.sparse as sp
+        if sp.issparse(X):
+            return X.toarray()
+        return X
+
 # ---------------------------------------------------------------------------
 # Optional LightGBM
 # ---------------------------------------------------------------------------

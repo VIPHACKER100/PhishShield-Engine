@@ -249,5 +249,187 @@
     "file_path": "models\\lgbm.pkl",
     "status": "active",
     "registered_at": "2026-03-01T06:09:06.618659+00:00"
+  },
+  {
+    "model_name": "naive_bayes",
+    "version": 5,
+    "algorithm": "naive_bayes",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\naive_bayes.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.412059+00:00"
+  },
+  {
+    "model_name": "logistic_regression",
+    "version": 1,
+    "algorithm": "logistic_regression",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\logistic_regression.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.416135+00:00"
+  },
+  {
+    "model_name": "svm",
+    "version": 2,
+    "algorithm": "svm",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\svm.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.419130+00:00"
+  },
+  {
+    "model_name": "random_forest",
+    "version": 3,
+    "algorithm": "random_forest",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\random_forest.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.422121+00:00"
+  },
+  {
+    "model_name": "gradient_boosting",
+    "version": 1,
+    "algorithm": "gradient_boosting",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 0.97,
+      "precision": 0.9434,
+      "recall": 1.0,
+      "f1_score": 0.9709,
+      "confusion_matrix": [
+        [
+          94,
+          6
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\gradient_boosting.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.425112+00:00"
+  },
+  {
+    "model_name": "lgbm",
+    "version": 3,
+    "algorithm": "lgbm",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 0.97,
+      "precision": 0.9434,
+      "recall": 1.0,
+      "f1_score": 0.9709,
+      "confusion_matrix": [
+        [
+          94,
+          6
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\lgbm.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:38.431867+00:00"
+  },
+  {
+    "model_name": "ensemble_voting",
+    "version": 1,
+    "algorithm": "VotingEnsemble",
+    "dataset_version": "run_20260301_121931",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ]
+    },
+    "file_path": "models\\ensemble_model.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T06:49:46.556016+00:00"
   }
 ]
