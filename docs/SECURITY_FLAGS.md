@@ -18,21 +18,21 @@ This document explains each of the 9 primary security flags the engine looks for
 **What it is:** Often paired with homograph attacks, mixed script vectors involve combining multiple foreign language scripts within the same contiguous word or domain.
 
 - **Example:** `Ρaypal.com` (combining a Greek Rho `Ρ` with Latin text).
-- **How we detect it:** The `script_detector.py` module evaluates the character distribution ratio. If a single word transitions between Latin, Cyrillic, or Greek sub-blocks unexpectedly, it is flagged.
+- **How we detect it:** The `script_detector.py` module calculates the script entropy and distribution. If a single word transitions between Latin, Cyrillic, or Greek sub-blocks unexpectedly, it is flagged.
 
 ## 3. Brand Spoofing (`brand_spoof`)
 
 **What it is:** Attackers frequently impersonate high-value targets (banks, e-commerce, cloud providers) to steal credentials.
 
 - **Example:** Supposed emails from `Amazon Support` linking to `amazn-security-update.com`.
-- **How we detect it:** The engine utilizes a Levenshtein distance algorithm to fuzzy-match extracted domains against our internal global `Target Brands` list in `config.yaml` (e.g., Apple, Microsoft, Chase).
+- **How we detect it:** The `brand_spoof_detector.py` engine utilizes a Levenshtein distance algorithm to fuzzy-match extracted domains against our internal global `target_brands` list in `config.yaml`.
 
 ## 4. IP-Based URLs (`ip_url`)
 
 **What it is:** Legitimate bulk senders use actual hostnames to direct users to their sites. Attackers, preferring disposable infrastructure, will often link raw IPv4 or IPv6 addresses directly to bypass DNS filtering.
 
 - **Example:** `http://192.168.1.55/login.php`
-- **How we detect it:** Regex parsing in `url_extractor.py` searches the host value of every URL in the email body for direct IP address formations.
+- **How we detect it:** Pattern matching in `url_features.py` (via `url_extractor.py`) searches the host value of every URL in the email body for direct IPv4 and IPv6 address formations.
 
 ## 5. Header Forgery (`header_spoof`)
 

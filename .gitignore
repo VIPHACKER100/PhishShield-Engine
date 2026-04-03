@@ -16,6 +16,7 @@ models/*.pkl
 
 # Raw data
 data/raw/
+data/enron/emails.csv
 
 # Logs
 logs/

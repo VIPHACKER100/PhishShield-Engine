@@ -10,12 +10,18 @@ At its core, PhishShield-Engine relies on a multi-stage pipeline where an incomi
 
 ```mermaid
 graph TD
+    %% Entry points
     A[Client App / Gmail Integration] -->|HTTP POST JSON| B(FastAPI Gateway)
     
+    %% Security & Auth
     B --> C{Rate Limiter & Auth}
     C -- Valid --> D[Payload Validation & Sanitization]
     C -- Blocked --> E[429 / 401 Error]
 
+    %% Main Auth Endpoints
+    B -.-> B_Auth[Auth Engine: /register, /login]
+
+    %% Transformation
     D --> F[Text Preprocessor]
     
     %% Twin pipelines
@@ -27,7 +33,7 @@ graph TD
         G1[Homograph Detection]
         G2[Brand Spoofing]
         G3[Header/SPF Verification]
-        G4[URL Obfuscation]
+        G4[URL / Obfuscation]
         G --> G1 & G2 & G3 & G4
     end
 
@@ -35,7 +41,7 @@ graph TD
     subgraph Machine Learning[Ensemble Intelligence]
         H1(TF-IDF / Char N-Gram)
         H2(Naive Bayes / LogReg / SVM)
-        H3(Random Forest / HistGB / LGBM)
+        H3(Random Forest / Gradient Boost)
         H --> H1
         H1 --> H2 & H3
         H2 & H3 --> H4{Voting / Stacking}
@@ -45,6 +51,10 @@ graph TD
     Forensics --> I[Risk Aggregator & Scoring]
     Machine Learning --> I
     
+    %% Special Analysis Endpoints
+    B -- /analyze-security --> Forensics
+    B -- /export-report --> I
+
     %% Output
     I --> J{Threat Explanation Gen (XAI)}
     J --> K[Final Risk Object]
@@ -62,7 +72,7 @@ graph TD
 
 - **FastAPI Framework**: Serves as the high-throughput asynchronous gateway. By default, it runs on standard Uvicorn workers that manage connection pooling.
 - **Middleware Security**: Intercepts requests to append distinct request IDs (`X-Request-ID`) and implements in-memory, per-IP rate limiting (60 RPM).
-- **Authentication (`auth.py`)**: Uses Python's built-in `bcrypt` and `PyJWT` libraries. If user registration is enabled, all requests MUST contain a Bearer Auth token. Otherwise, an `X-API-Key` fallback can be accepted.
+- **Authentication (`auth.py`)**: Uses Python's built-in `bcrypt` for hashed passwords and `PyJWT` for signed tokens. Provides endpoints for user registration and JWT-based session management.
 
 ### 2. Preprocessing & Normalization (`src/preprocessing/`)
 

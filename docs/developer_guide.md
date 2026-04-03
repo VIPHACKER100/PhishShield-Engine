@@ -38,7 +38,7 @@ python scripts/train_pipeline.py --generate --fast
 Used for day-to-day operations and threat intelligence management.
 
 | Command | Arguments | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `serve` | `--port <val>` | Launches the cinematic security dashboard. |
 | `block` | `<domain> [--reason <str>]` | Manually injects a domain into the threat intelligence blocklist. |
 | `metrics` | (None) | Aggregates local threat DB statistics and model health. |
@@ -54,14 +54,14 @@ python cli/manage.py block evil-hacker.com --reason "Active credential harvestin
 Handles the entire ML lifecycle from raw data to registered production models.
 
 | Flag | Default | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `--dataset_path` | `data/raw/emails.csv` | Path to the training dataset. |
 | `--vectorizer` | `tfidf` | Algorithm: `tfidf`, `bow`, or `tfidf_char`. |
 | `--sample_size` | (None) | Sub-sample N rows (prevents OOM on large datasets). |
 | `--fast` | (False) | Shortcut: 50k samples + Skip Ensemble. |
 | `--tune` | (False) | Triggers RandomizedSearchCV tuning. |
 | `--ensemble` | (False) | Trains model ensembles (`voting` or `stacking`). |
-| `--ensemble_kind`| `voting` | Choose `voting` (fast) or `stacking` (accurate). |
+| `--ensemble_kind` | `voting` | Choose `voting` (fast) or `stacking` (accurate). |
 | `--generate` | (False) | Generates synthetic phishing samples. |
 
 ### III. Operational Scripts
@@ -76,13 +76,17 @@ Handles the entire ML lifecycle from raw data to registered production models.
 
 ### 1. Forensic Intelligence Layer
 
-The `calculate_security_risk` function (in `src/security/risk_scoring.py`) executes 8 independent forensic scans:
+The `calculate_security_risk` function (in `src/security/risk_scoring.py`) executes 9 independent forensic scans:
 
 * **Obfuscation Scan**: Detects zero-width icons/markers via `src/security/obfuscation_detector.py`.
 * **Homograph Scan**: Identifies "lookalike" Unicode domains (punycode detection).
+* **Mixed-Script Detection**: Identifying "lookalike" characters from Latin, Greek, and Cyrillic scripts.
 * **Brand Protection**: Fuzzy-matches against 15+ high-value target brands.
 * **Header Forensics**: SPF/DKIM/DMARC validation and `Return-Path` analysis.
 * **Domain Intel**: Local SQLite lookup of known malicious domains.
+* **IP-Based URLs**: Detecting raw IP addresses in message links.
+* **Suspicious URLs**: Heuristic analysis of URL entropy and path patterns.
+* **Behavioral Threat**: Statistical mapping of text-based threat indicators.
 
 ### 2. Governance-as-Code (`config/config.yaml`)
 
@@ -169,3 +173,4 @@ The evolution of **PhishShield-Engine** followed a rigorous 80-phase roadmap, ca
 
 **VIPHACKER100 (Aryan Ahirwar)**
 *Cybersecurity Researcher | AI Security Lead*
+*Last Updated: 2026-04-03*

@@ -61,3 +61,4 @@ While `manage.py` handles primary runtime tasks, the `scripts/` directory operat
 - `python scripts/benchmark.py`: Fires an `asyncio` stress test delivering thousands of bulk payloads to evaluate API latency.
 - `python scripts/retrain_scheduler.py`: A daemon process monitoring `feedback.db`. Runs `train_pipeline.py` silently in the background if threshold drift occurs.
 - `python scripts/restore_backup.py <backup_id>`: Restores system registries, metrics, and models from a previously snapshotted environment.
+- `python scripts/chaos_monkey.py`: Stress-test the multi-layered rules engine by injecting adversarial Unicode and obfuscation payloads into the prediction pipeline.

@@ -44,3 +44,8 @@ To ensure reliability scaling past standard 60-RPM environments limiters:
 - We deploy `scripts/benchmark.py` which triggers `asyncio` parallel threading designed to rapidly bombard the `POST /predict/batch` endpoint.
 - PhishShield-Engine handles up to 10,000 parallel multi-email bulk arrays utilizing Uvicorn multi-threading without freezing DB interactions.
 - During severe instance failure, `scripts/restore_backup.py` pulls active Vectorizer, Models, and Model Registry configurations out of `/backups`.
+
+---
+
+**Maintainer**: VIPHACKER100 (Aryan Ahirwar)
+**Last Updated**: 2026-04-03

@@ -8,10 +8,10 @@ This guide covers the end-to-end machine learning lifecycle in PhishShield-Engin
 
 The PhishShield ML stack is built for **high-throughput forensic classification**.
 
-*   **Vectorization**: Uses TF-IDF with sublinear scaling, bigrams, and character n-grams (3-5) to detect obfuscated phishing content.
-*   **Preprocessing**: Features high-speed vectorized cleaning (20-50x faster than traditional NLTK loops).
-*   **Models**: Supports Naive Bayes, Linear SVC (calibrated), Logistic Regression, Random Forest, and Gradient Boosting (HistGB/LightGBM).
-*   **Ensembles**: Advanced **Voting** and **Stacking** ensembles for maximum accuracy.
+* **Vectorization**: Uses TF-IDF with sublinear scaling, bigrams, and character n-grams (3-5) to detect obfuscated phishing content.
+* **Preprocessing**: Features high-speed vectorized cleaning (20-50x faster than traditional NLTK loops).
+* **Models**: Supports Naive Bayes, Linear SVC (calibrated), Logistic Regression, Random Forest, and Gradient Boosting (HistGB/LightGBM).
+* **Ensembles**: Advanced **Voting** and **Stacking** ensembles for maximum accuracy.
 
 ---
 
@@ -31,6 +31,7 @@ python scripts/train_pipeline.py --generate --n_samples 5000 --fast
 The primary entry point is `scripts/train_pipeline.py`.
 
 ### 1. Data Loading & Sub-sampling
+
 When working with huge corpora (like the 500k+ Enron dataset), use `--sample_size` to prevent memory exhaustion and speed up iteration.
 
 ```bash
@@ -39,30 +40,41 @@ python scripts/train_pipeline.py --dataset_path "data/raw/vip/emails.csv" --samp
 ```
 
 ### 2. Choosing a Vectorizer
-*   `tfidf` (Default): Word-level TF-IDF with bigrams. Great for general spam.
-*   `bow`: Simple Bag-of-Words. Fast but less accurate.
-*   `tfidf_char`: **Character-level n-grams (3-5)**. Extremely robust against "leet-speak" (`P@yP@l`) and URL obfuscation.
+
+* `tfidf` (Default): Word-level TF-IDF with bigrams. Great for general spam.
+* `bow`: Simple Bag-of-Words. Fast but less accurate.
+* `tfidf_char`: **Character-level n-grams (3-5)**. Extremely robust against "leet-speak" (`P@yP@l`) and URL obfuscation.
 
 ```bash
 python scripts/train_pipeline.py --vectorizer tfidf_char
 ```
 
 ### 3. Ensembles & Stacking
+
 For production accuracy, use ensembles. 
 
-*   **Voting** (`--ensemble_kind voting`): Fast, combines probabilities from all models.
-*   **Stacking** (`--ensemble_kind stacking`): Slower, uses a Logistic Regression meta-learner to weigh model outputs.
+* **Voting** (`--ensemble_kind voting`): Fast, combines probabilities from all models.
+* **Stacking** (`--ensemble_kind stacking`): Slower, uses a Logistic Regression meta-learner to weigh model outputs.
 
 ```bash
 python scripts/train_pipeline.py --ensemble --ensemble_kind stacking
 ```
 
 ### 4. Hyperparameter Tuning
+
 Triggers `RandomizedSearchCV` to find optimal model parameters.
 
 ```bash
 # Run 50 iterations of random search per model
 python scripts/train_pipeline.py --tune --tune_iters 50
+```
+
+### 5. Porter Stemming
+
+Enable stemming during preprocessing for enhanced semantic normalization (note: this increases training time).
+
+```bash
+python scripts/train_pipeline.py --stem
 ```
 
 ---
@@ -71,9 +83,9 @@ python scripts/train_pipeline.py --tune --tune_iters 50
 
 After training, results are saved to `models/metrics.json` and logged to `experiments/experiment_log.json`.
 
-*   **Accuracy**: Overall percentage of correct predictions.
-*   **Precision/Recall**: Crucial for phishing (we typically prioritize Recall to ensure no phishing reaches the inbox).
-*   **F1-Score**: The harmonic mean, used to select the "Best Model" for production.
+* **Accuracy**: Overall percentage of correct predictions.
+* **Precision/Recall**: Crucial for phishing (we typically prioritize Recall to ensure no phishing reaches the inbox).
+* **F1-Score**: The harmonic mean, used to select the "Best Model" for production.
 
 ---
 
@@ -97,4 +109,4 @@ After training, results are saved to `models/metrics.json` and logged to `experi
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-03-01
+**Last Updated**: 2026-04-03

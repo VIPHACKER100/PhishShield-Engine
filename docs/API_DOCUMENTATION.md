@@ -4,19 +4,28 @@ Welcome to the **PhishShield-Engine** API reference. This platform provides a su
 
 ---
 
-## 🔐 Authentication
+## 🔐 Authentication & Identity
 
-Most endpoints require a **JSON Web Token (JWT)** in the `Authorization` header.
+Users must register and login to receive a **JSON Web Token (JWT)**, which must be provided in the `Authorization` header for all protected endpoints.
 
-```http
-Authorization: Bearer <your_jwt_token>
-```
+### 1. User Registration
+
+- **URL**: `/auth/register`
+- **Method**: `POST`
+- **Payload**: `{ "username": "...", "password": "..." }`
+
+### 2. User Login
+
+- **URL**: `/auth/login`
+- **Method**: `POST`
+- **Payload**: `{ "username": "...", "password": "..." }`
+- **Response**: `{ "access_token": "...", "token_type": "bearer" }`
 
 ---
 
 ## 📧 Core Security Endpoints
 
-### 1. Unified Prediction
+### 3. Unified Prediction
 
 Calculates both ML probability and Heuristic security risk.
 
@@ -32,20 +41,16 @@ Calculates both ML probability and Heuristic security risk.
 }
 ```
 
-- **Response**:
+### 4. Detailed Security Analysis
 
-```json
-{
-  "prediction": "spam",
-  "probability": 0.98,
-  "security_risk_score": 85,
-  "risk_level": "HIGH RISK",
-  "threat_reasons": ["Header Spoof", "IP link detected"],
-  "security_flags": { "obfuscation": false, "homograph": false ... }
-}
-```
+Phase 49: Deep forensic analysis without ML overhead.
 
-### 2. Batch Analysis
+- **URL**: `/analyze-security`
+- **Method**: `POST`
+- **Payload**: `{ "text": "...", "headers": "..." }`
+- **Response**: Detailed JSON including `risk_score`, `risk_level`, and specific `security_flags`.
+
+### 5. Batch Analysis
 
 Process up to 100 emails in a single request.
 
@@ -55,26 +60,7 @@ Process up to 100 emails in a single request.
 
 ---
 
-## ⛓️ Threat Intelligence Endpoints
-
-### 3. Domain Blocklist
-
-Add a domain to the local threat database.
-
-- **URL**: `/intel/block`
-- **Method**: `POST`
-- **Payload**: `{ "domain": "malicious.org", "reason": "Phishing" }`
-
-### 4. Intel Lookup
-
-Check if a domain is known to the intelligence engine.
-
-- **URL**: `/intel/check/{domain}`
-- **Method**: `GET`
-
----
-
-## 🧠 Model Management
+## 📊 Intelligence & Reporting
 
 ### 5. Analytics
 
@@ -100,12 +86,11 @@ Submit ground-truth corrections to trigger automated retraining.
 ```
 
 ### 7. Export Security Report
-
-Provides a complete, downloadable forensic breakdown of an email's threat indicators.
+Phase 63: Forensic Analysis Export. Provides a complete, downloadable forensic breakdown of an email's threat indicators.
 
 - **URL**: `/export-report`
 - **Method**: `POST`
-- **Payload**: `{ "text": "email content...", "headers": "From: ..." }`
+- **Payload**: `{ "text": "...", "headers": "..." }`
 - **Response**: Full JSON forensic mapping containing timestamps, extracted URLs, and risk breakdown.
 
 ### 8. A/B Testing Analytics

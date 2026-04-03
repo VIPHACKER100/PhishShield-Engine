@@ -112,3 +112,8 @@ One of the easiest ways to help PhishShield is by submitting new threat indicato
    - Any new dependencies you added to `requirements.txt` or `setup.py`.
 
 We actively review PRs and will try to get back to you within 48 hours. Happy coding and happy hunting! 🛡️
+
+---
+
+**Maintainer**: VIPHACKER100 (Aryan Ahirwar)
+**Last Updated**: 2026-04-03

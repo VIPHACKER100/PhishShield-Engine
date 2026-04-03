@@ -66,3 +66,8 @@ By default, any email flagged with a prediction of `spam` or a `security_risk_sc
 You can wire this `scan_inbox()` call to a cronjob, an internal task scheduler, or execute it manually using the CLI.
 
 > **Note**: If you want to configure auto-deletion or auto-labelling natively inside the Gmail client, edit the `_mark_as_threat(msg_id)` method inside `src/integrations/gmail_client.py`!
+
+---
+
+**Maintainer**: VIPHACKER100 (Aryan Ahirwar)
+**Last Updated**: 2026-04-03
