@@ -108,6 +108,7 @@ PhishShield-Engine/
 
 **VIPHACKER100 (Aryan Ahirwar)**
 Cybersecurity Researcher | AI Security Developer
+*Last Updated: 2026-04-03*
 
 ---
 
@@ -121,13 +122,14 @@ This tool is for educational and defensive security purposes only. Licensed unde
 
 Detailed technical documentation is available in the `docs/` directory:
 
-- [System Architecture](docs/ARCHITECTURE.md): High-level system design diagram and flow.
-- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the 9 forensic threat scanners.
-- [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, and architecture details.
-- [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference.
-- [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring the Google Cloud API for automatic inbox scanning.
-- [Enterprise Deployment](docs/ENTERPRISE_DEPLOYMENT.md): MLOps, scalability, and disaster recovery specs.
-- [CLI Reference](docs/CLI_REFERENCE.md): Command-line toolkit guide for `manage.py`.
+- [System Architecture](docs/ARCHITECTURE.md): High-level system design diagram, data flow, and modular components.
+- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the **9 independent forensic threat scanners**.
+- [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, and automated maintenance procedures.
+- [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference (Auth, Prediction, Reporting).
+- [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring Google OAuth2 for automated inbox scanning.
+- [Enterprise Deployment](docs/ENTERPRISE_DEPLOYMENT.md): MLOps, scalability, zero-trust secrets, and disaster recovery.
+- [CLI Reference](docs/CLI_REFERENCE.md): Command-line toolkit guide for `manage.py` and automation scripts.
+- [ML Training Guide](docs/ML_TRAINING_GUIDE.md): End-to-end model lifecycle, vectorization, and ensemble tuning.
 
 ---
 
