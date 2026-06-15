@@ -21,6 +21,38 @@ def _load_model(path: str):
 _BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "models")
 
 
+def _allowed_model_names() -> set[str]:
+    """Return the set of allowed model names derived from local model files."""
+    allowed = set()
+    if os.path.isdir(_BASE):
+        for filename in os.listdir(_BASE):
+            if filename.endswith(".pkl") and filename != "vectorizer.pkl":
+                allowed.add(filename[:-4])
+    return allowed
+
+
+def _sanitize_model_name(model_name: str | None) -> str:
+    """
+    Ensure model_name is restricted to known local model artifacts.
+    """
+    candidate = _default_model_name() if model_name is None else model_name
+    allowed = _allowed_model_names()
+    if candidate not in allowed:
+        raise ValueError(f"Unsupported model '{candidate}'. Allowed models: {sorted(allowed)}")
+    return candidate
+
+
+def _safe_model_path(model_name: str) -> str:
+    """
+    Build a model path and ensure it remains under the models base directory.
+    """
+    base_abs = os.path.abspath(_BASE)
+    model_path = os.path.abspath(os.path.join(_BASE, f"{model_name}.pkl"))
+    if os.path.commonpath([base_abs, model_path]) != base_abs:
+        raise ValueError("Invalid model path")
+    return model_path
+
+
 def _default_model_name() -> str:
     """Return the best model name from metrics.json, or fallback to naive_bayes."""
     metrics_path = os.path.join(_BASE, "metrics.json")
@@ -36,11 +68,10 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
     """
     from src.security.risk_scoring import calculate_security_risk
 
-    if model_name is None:
-        model_name = _default_model_name()
+    model_name = _sanitize_model_name(model_name)
 
     vectorizer_path = os.path.join(_BASE, "vectorizer.pkl")
-    model_path = os.path.join(_BASE, f"{model_name}.pkl")
+    model_path = _safe_model_path(model_name)
 
     if not os.path.exists(vectorizer_path):
         raise FileNotFoundError("Vectorizer not found. Run training first.")
