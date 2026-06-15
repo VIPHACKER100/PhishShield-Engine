@@ -34,12 +34,13 @@ def _allowed_model_names() -> set[str]:
 def _sanitize_model_name(model_name: str | None) -> str:
     """
     Ensure model_name is restricted to known local model artifacts.
+    Return a canonical trusted value sourced from the local allowlist.
     """
     candidate = _default_model_name() if model_name is None else model_name
     allowed = _allowed_model_names()
     if candidate not in allowed:
         raise ValueError(f"Unsupported model '{candidate}'. Allowed models: {sorted(allowed)}")
-    return candidate
+    return next(name for name in allowed if name == candidate)
 
 
 def _safe_model_path(model_name: str) -> str:
