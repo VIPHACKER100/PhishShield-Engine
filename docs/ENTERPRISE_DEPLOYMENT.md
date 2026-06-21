@@ -37,7 +37,16 @@ For cybersecurity analysts reviewing inbound traffic spikes:
 
 ---
 
-## ⛓️ 4. Chaos Monkey & Production Load Testing
+## 🐳 4. Docker Optimization
+
+For enterprise environments requiring fast CI/CD builds, the Docker image includes conditional build parameters.
+
+- **Fast Build (Default):** Skips local model retraining (`docker build .`).
+- **Full Build:** Trains the ensemble locally within the build container by passing `--build-arg TRAIN_MODELS=true`.
+
+---
+
+## ⛓️ 5. Chaos Monkey & Production Load Testing
 
 To ensure reliability scaling past standard 60-RPM environments limiters:
 
@@ -48,4 +57,4 @@ To ensure reliability scaling past standard 60-RPM environments limiters:
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-04-03
+**Last Updated**: 2026-06-22

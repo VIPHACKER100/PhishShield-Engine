@@ -2,7 +2,7 @@
 
 PhishShield-Engine uses a deterministic, rule-based forensic scanning engine that runs alongside the machine learning models. Every time an email is analyzed, the system returns a `security_flags` object containing booleans for multiple distinct threats, and calculates a `security_risk_score` from `0` to `100`.
 
-This document explains each of the 9 primary security flags the engine looks for.
+This document explains each of the 10 primary security flags the engine looks for.
 
 ---
 
@@ -69,8 +69,15 @@ This document explains each of the 9 primary security flags the engine looks for
 - **Example:** *"Your account will be suspended in 24 hours. Act now."*
 - **How we detect it:** NLP analysis of the cleaned text looking for extreme urgency indicators, arbitrary deadlines, and financial reward/threat bait (`text_behavior.py`).
 
+## 10. Cyrillic URL Spoofing (`cyrillic_url`)
+
+**What it is:** Specific targeting of homograph attacks where Cyrillic characters are embedded directly into raw URLs to deceive users.
+
+- **Example:** `https://вася.com`
+- **How we detect it:** The URL checker uses regular expressions (`[\u0400-\u04FF]`) to explicitly flag any extracted URL containing characters from the Cyrillic Unicode block (`url_features.py`).
+
 ---
 
 ## Conclusion
 
-The aggregate output of these 9 flags is weighted. For example, `brand_spoof` combined with `ip_url` instantly forces a `High Risk (Score: 85+)` rating, ensuring even if the ML model is unsure due to adversarial text tricks, the forensic scanning accurately catches the attack!
+The aggregate output of these 10 flags is weighted. For example, `brand_spoof` combined with `ip_url` instantly forces a `High Risk (Score: 85+)` rating, ensuring even if the ML model is unsure due to adversarial text tricks, the forensic scanning accurately catches the attack!

@@ -26,7 +26,7 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 
 - **Phishing Detection**: Specialized logic for identifying social engineering and credential theft attempts.
 - **Obfuscation Defense (Phase 85)**: Advanced detection of zero-width characters and hidden markers used to bypass traditional filters.
-- **Homograph Attack Protection**: Identifies IDN (Internationalized Domain Name) attacks and Unicode-based visual spoofing.
+- **Homograph Attack Protection**: Identifies IDN (Internationalized Domain Name) attacks, Cyrillic alphabet URL spoofing, and Unicode-based visual spoofing.
 - **Fuzzy Brand Protection**: Detects impersonation of 15+ major global brands (PayPal, Amazon, Google, etc.).
 - **Header Forensics**: Deep validation of SPF/DKIM/DMARC and detection of sender-domain mismatches.
 
@@ -35,11 +35,11 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 - **Ensemble Intelligence**: High-performance voting classifier combining Naive Bayes, SVM, and Random Forests.
 - **Quantitative Risk Scoring**: Assess threats on a 0–100 scale with granular severity levels.
 - **Explainable AI (XAI)**: Generates human-readable justifications for every heuristic security flag.
-- **Adaptive Learning**: Automated retraining scheduler that updates models based on live user feedback.
+- **Adaptive Learning**: Automated retraining scheduler that updates models based on live user feedback, persisting to dual SQLite and CSV databases.
 
 ### ⚙️ Operations & Scalability
 
-- **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database).
+- **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database) with fast optional training builds (`--build-arg TRAIN_MODELS=true`).
 - **Gmail Integration (Phase 83)**: Automated inbox scanning using secure Google OAuth2 flows. [Read the Integration Guide](docs/GMAIL_INTEGRATION.md).
 - **Developer CLI**: Productivity tool for managing local blocklists, monitoring metrics, and launching the platform.
 - **YAML Governance**: Centralized configuration for security weights, risk thresholds, and compliance policies.
@@ -108,7 +108,7 @@ PhishShield-Engine/
 
 **VIPHACKER100 (Aryan Ahirwar)**
 Cybersecurity Researcher | AI Security Developer
-*Last Updated: 2026-04-03*
+*Last Updated: 2026-06-22*
 
 ---
 
@@ -123,7 +123,7 @@ This tool is for educational and defensive security purposes only. Licensed unde
 Detailed technical documentation is available in the `docs/` directory:
 
 - [System Architecture](docs/ARCHITECTURE.md): High-level system design diagram, data flow, and modular components.
-- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the **9 independent forensic threat scanners**.
+- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the **10 independent forensic threat scanners**.
 - [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, and automated maintenance procedures.
 - [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference (Auth, Prediction, Reporting).
 - [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring Google OAuth2 for automated inbox scanning.

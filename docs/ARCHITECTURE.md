@@ -90,7 +90,7 @@ This is the deterministic, rules-based engine that acts adjacent to the ML predi
 ### 4. Machine Learning & XAI (`src/models/`, `src/features/`)
 
 - **Ensemble Structure**: Operates a state-of-the-art `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting (`HistGB` / `LightGBM`). Supports deep-feature extraction via character n-grams.
-- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks `feedback.db` for new records. If a threshold is met, it runs **Randomized Search** tuning locally, evaluates the new `F1` score, and promotes it to production if it outperforms the legacy model. Supports both **Voting** and **Stacking** ensemble techniques.
+- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks dual SQLite (`feedback.db`) and CSV storage for new records. If a threshold is met, it runs **Randomized Search** tuning locally, evaluates the new `F1` score, and promotes it to production if it outperforms the legacy model. Supports both **Voting** and **Stacking** ensemble techniques.
 
 ### 5. Config Governance (`config/config.yaml`)
 
