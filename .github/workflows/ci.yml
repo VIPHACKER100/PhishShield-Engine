@@ -35,6 +35,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Code Formatting Check (Black)
+        run: |
+          pip install black
+          black --check src/ tests/
+
+      - name: Linting (Flake8)
+        run: |
+          pip install flake8
+          flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Security Scanning (Bandit)
+        run: |
+          pip install bandit
+          bandit -r src/ -ll -ii
+
       - name: Download NLTK data
         run: python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')"
 

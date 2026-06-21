@@ -1,6 +1,6 @@
 # Core ML
 pandas>=2.1
-numpy==1.26.4
+numpy>=1.26
 scikit-learn>=1.5
 scipy>=1.11
 nltk>=3.8
@@ -31,3 +31,14 @@ PyYAML>=6.0
 google-api-python-client>=2.120
 google-auth-oauthlib>=1.2
 google-auth-httplib2>=0.2
+slowapi>=0.1.9
+redis>=5.0
+sqlalchemy>=2.0
+alembic>=1.13
+psycopg2-binary>=2.9
+arq>=0.26
+transformers>=4.40
+sentence-transformers>=3.0
+chromadb>=0.5
+shap>=0.45
+prometheus-fastapi-instrumentator>=7.0

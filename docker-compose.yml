@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build: .
@@ -8,14 +6,31 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-    environment:
-      - ENV=prod
+    env_file:
+      - .env
     restart: always
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  worker:
+    build: .
+    command: ["arq", "src.core.worker.WorkerSettings"]
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    restart: always
 
   scheduler:
     build: .
@@ -23,6 +38,47 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
     command: ["python", "scripts/retrain_scheduler.py"]
+    env_file:
+      - .env
     restart: always
     depends_on:
       - api
+      - postgres
+
+  redis:
+    image: "redis:7-alpine"
+    ports:
+      - "6379:6379"
+    restart: always
+
+  postgres:
+    image: "postgres:16-alpine"
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    ports:
+      - "9090:9090"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    restart: always
+
+volumes:
+  pgdata:

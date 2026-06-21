@@ -2,16 +2,9 @@
 Adaptive Learning Engine — Incremental retraining based on live feedback and drift logs.
 """
 
-import os
-import sqlite3
 import pandas as pd
-from datetime import datetime
 from src.utils.logger import logger
-# Import pipeline function after it's been updated in previous phases
-# For now, we simulate the retraining logic.
-
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data")
-FEEDBACK_DB = os.path.join(DATA_DIR, "feedback.db")
+from src.core.database import SessionLocal, Feedback
 
 class AdaptiveLearner:
     """
@@ -23,22 +16,31 @@ class AdaptiveLearner:
         
     def check_and_retrain(self):
         """Check if enough new data exists to justify retraining."""
-        if not os.path.exists(FEEDBACK_DB):
-            return
-            
+        session = SessionLocal()
         try:
-            conn = sqlite3.connect(FEEDBACK_DB)
-            # Find entries since last retraining (mocked)
-            df = pd.read_sql("SELECT * FROM feedback", conn)
-            conn.close()
-            
-            if len(df) >= self.threshold:
+            feedbacks = session.query(Feedback).all()
+            if len(feedbacks) >= self.threshold:
+                # Convert list of SQLAlchemy models to DataFrame
+                data = [
+                    {
+                        "id": f.id,
+                        "timestamp": f.timestamp.isoformat() if f.timestamp else None,
+                        "email_text": f.email_text,
+                        "predicted_label": f.predicted_label,
+                        "correct_label": f.correct_label,
+                        "model_used": f.model_used
+                    }
+                    for f in feedbacks
+                ]
+                df = pd.DataFrame(data)
                 logger.info("Adaptive Learning: Threshold reached (%d entries). Starting incremental retrain...", len(df))
                 self._run_retraining_job(df)
             else:
-                logger.info("Adaptive Learning: Not enough new data yet (%d/%d)", len(df), self.threshold)
+                logger.info("Adaptive Learning: Not enough new data yet (%d/%d)", len(feedbacks), self.threshold)
         except Exception as e:
             logger.error("Adaptive Learning Error: %s", e)
+        finally:
+            session.close()
 
     def _run_retraining_job(self, new_data: pd.DataFrame):
         """

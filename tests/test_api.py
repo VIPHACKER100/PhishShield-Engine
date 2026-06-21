@@ -15,7 +15,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="httpx")
 @pytest.fixture
 def client():
     from src.api.app import app
-    return TestClient(app)
+    with TestClient(app) as c:
+        yield c
 
 
 def test_health(client):

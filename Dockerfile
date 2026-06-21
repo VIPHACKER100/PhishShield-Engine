@@ -1,13 +1,23 @@
-FROM python:3.11-slim
+FROM python:3.11-slim as builder
 
 WORKDIR /app
 
 # Install system deps
-RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps
+# Install Python deps into wheels
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+
+# Final Stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/wheels /wheels
+COPY --from=builder /app/requirements.txt .
+
+RUN pip install --no-cache /wheels/*
 
 # Download NLTK data at build time
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')"
@@ -16,7 +26,6 @@ RUN python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); 
 COPY . .
 
 # Generate dataset & train models during build (optional - can be skipped with --target=base)
-# For production, use pre-trained models from models/ directory
 ARG TRAIN_MODELS=true
 RUN if [ "$TRAIN_MODELS" = "true" ]; then python scripts/train_pipeline.py --generate --fast; fi
 
