@@ -431,5 +431,68 @@
     "file_path": "models\\ensemble_model.pkl",
     "status": "active",
     "registered_at": "2026-03-01T06:49:46.556016+00:00"
+  },
+  {
+    "model_name": "naive_bayes",
+    "version": 6,
+    "algorithm": "naive_bayes",
+    "dataset_version": "run_20260301_124453",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": [
+        [
+          10000
+        ]
+      ]
+    },
+    "file_path": "models\\naive_bayes.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T07:17:15.874368+00:00"
+  },
+  {
+    "model_name": "random_forest",
+    "version": 4,
+    "algorithm": "random_forest",
+    "dataset_version": "run_20260301_124453",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": [
+        [
+          10000
+        ]
+      ]
+    },
+    "file_path": "models\\random_forest.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T07:17:15.880546+00:00"
+  },
+  {
+    "model_name": "lgbm",
+    "version": 4,
+    "algorithm": "lgbm",
+    "dataset_version": "run_20260301_124453",
+    "parameters": {},
+    "metrics": {
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": [
+        [
+          10000
+        ]
+      ]
+    },
+    "file_path": "models\\lgbm.pkl",
+    "status": "active",
+    "registered_at": "2026-03-01T07:17:15.880546+00:00"
   }
 ]

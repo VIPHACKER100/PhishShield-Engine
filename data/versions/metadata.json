@@ -94,5 +94,17 @@
       "label"
     ],
     "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260301_124453",
+    "filename": "run_20260301_124453_emails.csv",
+    "source": "Training run at 2026-03-01 12:44:53.596959",
+    "date_added": "2026-03-01T07:15:35.675638+00:00",
+    "num_samples": 517401,
+    "columns": [
+      "file",
+      "message"
+    ],
+    "preprocessing_steps": []
   }
 ]

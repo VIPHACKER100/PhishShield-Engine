@@ -19,6 +19,11 @@ def run_security_rules(security_flags: dict, risk_score: int) -> dict:
         reasons.append("Homograph visual spoiler detected")
         override_spam = True
         
+    if security_flags.get("cyrillic_url"):
+        reasons.append("Suspicious Cyrillic characters in URL detected")
+        override_spam = True
+
+        
     if risk_score > 75:
         reasons.append("Aggregate forensic risk critically high")
         override_spam = True

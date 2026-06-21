@@ -27,3 +27,11 @@ def test_risk_scoring():
     assert result.get("risk_score", 0) > 30
     flags = result.get("security_flags", {})
     assert flags.get("ip_url", False) is True
+
+def test_cyrillic_url_detection():
+    from src.security.risk_scoring import calculate_security_risk
+    text = "Visit https://вася.com"
+    result = calculate_security_risk(text)
+    assert result.get("risk_score", 0) >= 50
+    flags = result.get("security_flags", {})
+    assert flags.get("cyrillic_url", False) is True

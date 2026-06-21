@@ -73,6 +73,10 @@ def calculate_security_risk(text: str, raw_headers: str = "") -> dict:
         score += w.get("behavioral_low", 15)
         reasons.append("Suspicious writing behavior (Urgency/Reward Bait)")
         
+    if url_feats.get("has_cyrillic"):
+        score += w.get("cyrillic_url", 50)
+        reasons.append("URL contains suspicious Cyrillic characters (potential homograph attack)")
+
     if url_feats["has_ip_url"]:
         score += w.get("ip_url", 45)
         reasons.append("Url contains direct IP address")
@@ -113,6 +117,7 @@ def calculate_security_risk(text: str, raw_headers: str = "") -> dict:
             "suspicious_url": url_feats["is_url_suspicious"],
             "brand_spoof": brand_feats["brand_impersonation_detected"],
             "ip_url": url_feats["has_ip_url"],
+            "cyrillic_url": url_feats.get("has_cyrillic", False),
             "behavioral_threat": behavior_feats["behavior_score"] > 50,
             "domain_risk": domain_feats["known_malicious_count"] > 0,
             "header_spoof": header_feats["is_spoofed"],

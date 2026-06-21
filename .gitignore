@@ -33,3 +33,6 @@ Thumbs.db
 # Environment
 .env
 .env.local
+data/processed/preprocessed.csv
+data/versions/run_20260301_124453_emails.csv
+
