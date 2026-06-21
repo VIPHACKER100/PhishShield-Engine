@@ -56,7 +56,7 @@ graph TD
     B -- /export-report --> I
 
     %% Output
-    I --> J{Threat Explanation Gen (XAI)}
+    I --> J{"Threat Explanation Gen (XAI)"}
     J --> K[Final Risk Object]
     
     %% Logging & Storage
