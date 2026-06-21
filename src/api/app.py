@@ -103,6 +103,8 @@ class PredictRequest(BaseModel):
 
 
 class BatchPredictRequest(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     emails: list[str] = Field(..., min_length=1, max_length=100)
     model_name: Optional[str] = None
 
@@ -118,6 +120,8 @@ class LoginRequest(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     email_text: str = Field(..., min_length=1)
     predicted_label: str
     correct_label: str

@@ -106,5 +106,17 @@
       "message"
     ],
     "preprocessing_steps": []
+  },
+  {
+    "version": "run_20260621_234050",
+    "filename": "run_20260621_234050_emails.csv",
+    "source": "Training run at 2026-06-21 23:40:50.116054",
+    "date_added": "2026-06-21T18:10:50.134004+00:00",
+    "num_samples": 1000,
+    "columns": [
+      "text",
+      "label"
+    ],
+    "preprocessing_steps": []
   }
 ]

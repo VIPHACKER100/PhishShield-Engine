@@ -13,6 +13,7 @@ security:
     multiple_urls: 10
     domain_blacklist: 60
     header_spoof: 40
+    cyrillic_url: 50
   thresholds:
     high_risk: 75
     suspicious: 30

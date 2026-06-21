@@ -22,7 +22,7 @@ setuptools.setup(
     python_requires='>=3.11',
     install_requires=[
         "pandas>=2.1",
-        "numpy>=1.24",
+        "numpy==1.26.4",
         "scikit-learn>=1.4",
         "nltk>=3.8",
         "joblib>=1.3",

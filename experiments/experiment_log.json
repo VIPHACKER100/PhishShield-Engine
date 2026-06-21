@@ -347,5 +347,114 @@
         ]
       }
     ]
+  },
+  {
+    "timestamp": "2026-06-21T18:10:57.957579+00:00",
+    "vectorizer": "tfidf",
+    "best_model": "naive_bayes",
+    "results": [
+      {
+        "model": "naive_bayes",
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            0,
+            100
+          ]
+        ]
+      },
+      {
+        "model": "logistic_regression",
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            0,
+            100
+          ]
+        ]
+      },
+      {
+        "model": "svm",
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            0,
+            100
+          ]
+        ]
+      },
+      {
+        "model": "random_forest",
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            0,
+            100
+          ]
+        ]
+      },
+      {
+        "model": "gradient_boosting",
+        "accuracy": 0.965,
+        "precision": 1.0,
+        "recall": 0.93,
+        "f1_score": 0.9637,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            7,
+            93
+          ]
+        ]
+      },
+      {
+        "model": "lgbm",
+        "accuracy": 0.965,
+        "precision": 1.0,
+        "recall": 0.93,
+        "f1_score": 0.9637,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            7,
+            93
+          ]
+        ]
+      }
+    ]
   }
 ]

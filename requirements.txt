@@ -1,6 +1,6 @@
 # Core ML
 pandas>=2.1
-numpy>=1.24
+numpy==1.26.4
 scikit-learn>=1.5
 scipy>=1.11
 nltk>=3.8

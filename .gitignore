@@ -33,6 +33,9 @@ Thumbs.db
 # Environment
 .env
 .env.local
-data/processed/preprocessed.csv
 data/versions/run_20260301_124453_emails.csv
 
+data/versions/run_20260621_234050_emails.csv
+C:\Users\vipha\Desktop\PhishShield-Engine\data\processed\preprocessed.csv
+data/feedback/feedback_data.csv
+data/*

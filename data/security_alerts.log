@@ -1,2 +1,4 @@
 2026-02-26T22:51:24.707974 | WARNING | ['Url contains direct IP address', 'SPF authentication failed', 'From domain mismatch with Return-Path']
 2026-02-26T22:54:02.837584 | WARNING | ['Url contains direct IP address', 'SPF authentication failed', 'From domain mismatch with Return-Path']
+2026-06-22T00:12:24.156641 | CRITICAL | ['Mixed Unicode scripts detected', 'URL contains suspicious Cyrillic characters (potential homograph attack)', 'Homograph (IDN) attack detected']
+2026-06-22T00:12:24.175519 | CRITICAL | ['Brand Impersonation detected: paypal', 'Suspicious TLD(s) detected: 1', 'Homograph (IDN) attack detected']

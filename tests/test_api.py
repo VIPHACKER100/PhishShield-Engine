@@ -2,10 +2,14 @@
 
 import sys
 import os
+import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 from fastapi.testclient import TestClient
+
+# Suppress httpx deprecation warning for TestClient
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="httpx")
 
 
 @pytest.fixture
@@ -34,7 +38,7 @@ def test_dashboard_page(client):
 
 
 def test_predict_empty_text(client):
-    res = client.post("/predict", json={"email_text": ""})
+    res = client.post("/predict", json={"text": ""})
     assert res.status_code == 422  # validation error
 
 

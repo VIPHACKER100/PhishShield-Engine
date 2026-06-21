@@ -15,8 +15,10 @@ RUN python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); 
 # Copy project
 COPY . .
 
-# Generate dataset & train models during build
-RUN python scripts/train_pipeline.py --generate --ensemble
+# Generate dataset & train models during build (optional - can be skipped with --target=base)
+# For production, use pre-trained models from models/ directory
+ARG TRAIN_MODELS=true
+RUN if [ "$TRAIN_MODELS" = "true" ]; then python scripts/train_pipeline.py --generate --fast; fi
 
 # Expose port
 EXPOSE 8000
