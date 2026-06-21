@@ -33,16 +33,18 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 ### 🧠 Machine Learning Engine
 
 - **Ensemble Intelligence**: High-performance voting classifier combining Naive Bayes, SVM, and Random Forests.
+- **Deep Learning & RAG**: Transformer-based inference (`bert-base-uncased`) augmented by ChromaDB-powered Vector Search for semantic threat matching.
 - **Quantitative Risk Scoring**: Assess threats on a 0–100 scale with granular severity levels.
-- **Explainable AI (XAI)**: Generates human-readable justifications for every heuristic security flag.
-- **Adaptive Learning**: Automated retraining scheduler that updates models based on live user feedback, persisting to dual SQLite and CSV databases.
+- **Explainable AI (XAI)**: Generates human-readable justifications and local feature importance via **SHAP** for heuristic and ML flags.
+- **Adaptive Learning**: Automated retraining scheduler that updates models based on live user feedback, persisted via a central **SQLAlchemy ORM**.
 
 ### ⚙️ Operations & Scalability
 
-- **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database) with fast optional training builds (`--build-arg TRAIN_MODELS=true`).
+- **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database) managed by `docker-compose` with `.env` injection.
+- **Database Migrations**: Automated schema versioning via **Alembic** mapped to PostgreSQL/SQLite via SQLAlchemy.
+- **Background Processing**: Heavy computational tasks and external alerts are offloaded to **ARQ** (Redis-based async queue).
+- **Observability**: Exposes a `/metrics` endpoint natively instrumented for **Prometheus** and Grafana dashboards.
 - **Gmail Integration (Phase 83)**: Automated inbox scanning using secure Google OAuth2 flows. [Read the Integration Guide](docs/GMAIL_INTEGRATION.md).
-- **Developer CLI**: Productivity tool for managing local blocklists, monitoring metrics, and launching the platform.
-- **YAML Governance**: Centralized configuration for security weights, risk thresholds, and compliance policies.
 
 ---
 

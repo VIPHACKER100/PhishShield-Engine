@@ -39,7 +39,7 @@ graph TD
 
     %% ML Engine
     subgraph MachineLearning[Ensemble Intelligence]
-        H1(TF-IDF / Char N-Gram)
+        H1(Deep Learning & Vector Search via ChromaDB)
         H2(Naive Bayes / LogReg / SVM)
         H3(Random Forest / Gradient Boost)
         H --> H1
@@ -51,16 +51,17 @@ graph TD
     Forensics --> I[Risk Aggregator & Scoring]
     MachineLearning --> I
     
-    %% Special Analysis Endpoints
-    B -- /analyze-security --> Forensics
-    B -- /export-report --> I
-
+    %% Background Jobs & Analytics
+    B -- /metrics --> P[Prometheus Scraper]
+    B -- /predict --> ARQ[ARQ Redis Workers]
+    ARQ -.-> I
+    
     %% Output
-    I --> J{"Threat Explanation Gen (XAI)"}
+    I --> J{"SHAP XAI Explanation"}
     J --> K[Final Risk Object]
     
     %% Logging & Storage
-    K --> L[(Threat Logging DB)]
+    K --> L[(SQLAlchemy ORM + Alembic DB)]
     K -->|Actionable Response| A
 ```
 
@@ -70,9 +71,10 @@ graph TD
 
 ### 1. API Interface & Traffic Routing (`src/api/`)
 
-- **FastAPI Framework**: Serves as the high-throughput asynchronous gateway. By default, it runs on standard Uvicorn workers that manage connection pooling.
+- **FastAPI Framework**: Serves as the high-throughput asynchronous gateway. Exposes a native `/metrics` endpoint for **Prometheus** and Grafana dashboards.
 - **Middleware Security**: Intercepts requests to append distinct request IDs (`X-Request-ID`) and implements in-memory, per-IP rate limiting (60 RPM).
-- **Authentication (`auth.py`)**: Uses Python's built-in `bcrypt` for hashed passwords and `PyJWT` for signed tokens. Provides endpoints for user registration and JWT-based session management.
+- **Background Jobs**: Heavy ML inference and external email integrations are offloaded to **ARQ**, a Redis-based asynchronous task queue, replacing native BackgroundTasks for better scalability.
+- **Authentication (`auth.py`)**: Uses Python's built-in `bcrypt` for hashed passwords and `PyJWT` for signed tokens. Authenticated via a central **SQLAlchemy ORM**.
 
 ### 2. Preprocessing & Normalization (`src/preprocessing/`)
 
@@ -87,10 +89,13 @@ This is the deterministic, rules-based engine that acts adjacent to the ML predi
 - **URL & Zero-width Obfuscation**: Scans for embedded zero-width joiners (`\u200D` or `\u200B`) that attackers insert into body text to bypass spam-filters looking for common keywords.
 - **Brand Intelligence**: Conducts aggressive fuzzy-matching on specific protected brand lists (e.g., Apple, PayPal). Calculates the Levenshtein distance against known safe domains.
 
-### 4. Machine Learning & XAI (`src/models/`, `src/features/`)
+### 4. Machine Learning, Storage, & XAI (`src/models/`, `src/features/`)
 
-- **Ensemble Structure**: Operates a state-of-the-art `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting (`HistGB` / `LightGBM`). Supports deep-feature extraction via character n-grams.
-- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks dual SQLite (`feedback.db`) and CSV storage for new records. If a threshold is met, it runs **Randomized Search** tuning locally, evaluates the new `F1` score, and promotes it to production if it outperforms the legacy model. Supports both **Voting** and **Stacking** ensemble techniques.
+- **Storage & Migrations**: A unified **SQLAlchemy** layer manages all database interactions (Users, Feedback, UsageLogs) via `src.core.database`. Schema updates are version-controlled using **Alembic**.
+- **Deep Learning & Vector Search**: Introduces `DeepLearningModel` backed by HuggingFace Transformers, alongside semantic similarity threat detection via ChromaDB and SentenceTransformers.
+- **Ensemble Structure**: Operates a state-of-the-art `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting.
+- **XAI via SHAP**: Integrates `shap.LinearExplainer` to extract meaningful feature importance metrics for end-users, explaining exact words that triggered the phishing classifier.
+- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks the PostgreSQL/SQLite `feedback` table for new records. If a threshold is met, it runs Randomized Search tuning and promotes the best model.
 
 ### 5. Config Governance (`config/config.yaml`)
 

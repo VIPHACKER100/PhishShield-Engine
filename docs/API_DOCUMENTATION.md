@@ -105,10 +105,11 @@ Returns the real-time split testing summary for active models.
 
 ## 🛠️ Utility Endpoints
 
-### 9. Health Checks
+### 9. Health Checks & Observability
 
 - `GET /health`: Core system status.
 - `GET /health/ready`: Checks model readiness and DB connections.
+- `GET /metrics`: **Prometheus** metrics endpoint exposing active instrumentations (request counts, latency histograms).
 
 ### 10. Interactive Documentation
 

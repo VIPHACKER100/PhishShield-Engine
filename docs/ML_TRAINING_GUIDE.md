@@ -6,12 +6,15 @@ This guide covers the end-to-end machine learning lifecycle in PhishShield-Engin
 
 ## 🏗️ Architecture Overview
 
-The PhishShield ML stack is built for **high-throughput forensic classification**.
+The PhishShield ML stack is built for **high-throughput forensic classification** with fallback deep semantic understanding.
 
 * **Vectorization**: Uses TF-IDF with sublinear scaling, bigrams, and character n-grams (3-5) to detect obfuscated phishing content.
+* **Deep Learning**: Integration with HuggingFace Transformers (`bert-base-uncased`) via the `DeepLearningModel` class.
+* **Vector Search**: Semantic caching and threat matching via `VectorSearchDB` powered by ChromaDB and SentenceTransformers.
 * **Preprocessing**: Features high-speed vectorized cleaning (20-50x faster than traditional NLTK loops).
 * **Models**: Supports Naive Bayes, Linear SVC (calibrated), Logistic Regression, Random Forest, and Gradient Boosting (HistGB/LightGBM).
 * **Ensembles**: Advanced **Voting** and **Stacking** ensembles for maximum accuracy.
+* **Explainability (XAI)**: Native `shap.LinearExplainer` integration to visualize feature importance.
 
 ---
 

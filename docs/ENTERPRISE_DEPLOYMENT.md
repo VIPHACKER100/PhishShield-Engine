@@ -16,31 +16,33 @@ To keep private tokens, OpenAI fallbacks, and internal JWT signing keys isolated
 
 ---
 
-## 📈 2. Automated Model Lifecycle (MLOps)
+## 📈 2. Automated Model Lifecycle (MLOps) & Processing
 
 The internal Machine Learning ecosystem governs its own drift, monitoring, and validation.
 
-- **A/B Testing:** Multi-pipeline inference runs internally handled by `src/models/ab_testing.py` where traffic can dynamically split between Naive Bayes and SVM.
-- **Retrain Daemon:** `scripts/retrain_scheduler.py` is cron-executable. It analyzes records in `data/feedback.db` and when a threshold of misclassifications is corrected by users, it natively initiates GridSearch and saves a new `.pkl` ensemble to `models/` without server downtime.
-- **Drift Monitoring:** Asynchronous instances within `src/models/drift_monitor.py` ensure live data inference length doesn't radically outpace training vectors.
-- **Deep Learning Architecture Base:** `src/models/deep_learning.py` scaffolds operations designed to intake `bert-base-uncased` Transformers when massive context capacity is required without interrupting Scikit-Learn pipelines.
+- **Background Queueing (ARQ & Redis):** High-latency predictions and background tasks (like `check_drift` and `trigger_security_alert`) are decoupled from the FastAPI request cycle using **ARQ** backed by Redis.
+- **A/B Testing:** Multi-pipeline inference runs internally handled by `src/models/ab_testing.py` where traffic can dynamically split between Naive Bayes, SVM, and Transformers.
+- **Retrain Daemon:** `scripts/retrain_scheduler.py` is an asynchronous worker. It analyzes records in the unified **SQLAlchemy ORM** feedback table and initiates GridSearch without server downtime.
+- **Deep Learning Architecture Base:** `src/models/deep_learning.py` runs Transformer pipelines (`bert-base-uncased`) and leverages ChromaDB semantic caching to avoid repeated inferences.
 
 ---
 
-## 📡 3. Analytics & Explainable AI (XAI)
+## 📡 3. Analytics, Explainability (XAI), & Observability
 
 For cybersecurity analysts reviewing inbound traffic spikes:
 
-- `POST /export-report`: Compiles an immediately readable mapping merging all 9 active Forensic Rules (Homographs, Brand Spoofing, Embedded Scripting) alongside the Scikit-learn outputs.
-- `GET /analytics`: Spits out exact testing tolerances against F1-Scores and training subsets from `metrics.json`.
-- `logs/compliance.log` & `logs/incidents.log`: Aggregated structured JSON output to track anomalous server behaviors compliant with rigid logging (Phase 72).
+- `POST /export-report`: Compiles an immediately readable mapping merging all 9 active Forensic Rules alongside the Scikit-learn outputs.
+- `GET /metrics`: Native **Prometheus** endpoint exposing model inference latencies, API request rates, and active threat detection histograms. Ideal for Grafana integrations.
+- **SHAP Integration:** The XAI pipeline utilizes `shap.LinearExplainer` to explicitly assign weight and threat contribution to individual tokens in the email body.
+- **Unified DB Migrations:** Schema evolution (like adding new feedback columns) is managed deterministically via **Alembic**, ensuring zero-downtime database upgrades.
 
 ---
 
 ## 🐳 4. Docker Optimization
 
-For enterprise environments requiring fast CI/CD builds, the Docker image includes conditional build parameters.
+For enterprise environments requiring fast CI/CD builds, the Docker image includes conditional build parameters and environment injection.
 
+- **Environment Injection:** Requires a strictly formatted `.env` file containing Postgres/SQLite `DATABASE_URL` and `REDIS_URL`.
 - **Fast Build (Default):** Skips local model retraining (`docker build .`).
 - **Full Build:** Trains the ensemble locally within the build container by passing `--build-arg TRAIN_MODELS=true`.
 
@@ -51,7 +53,7 @@ For enterprise environments requiring fast CI/CD builds, the Docker image includ
 To ensure reliability scaling past standard 60-RPM environments limiters:
 
 - We deploy `scripts/benchmark.py` which triggers `asyncio` parallel threading designed to rapidly bombard the `POST /predict/batch` endpoint.
-- PhishShield-Engine handles up to 10,000 parallel multi-email bulk arrays utilizing Uvicorn multi-threading without freezing DB interactions.
+- PhishShield-Engine handles up to 10,000 parallel multi-email bulk arrays utilizing Uvicorn multi-threading and ARQ task distribution.
 - During severe instance failure, `scripts/restore_backup.py` pulls active Vectorizer, Models, and Model Registry configurations out of `/backups`.
 
 ---
