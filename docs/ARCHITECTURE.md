@@ -38,7 +38,7 @@ graph TD
     end
 
     %% ML Engine
-    subgraph Machine Learning[Ensemble Intelligence]
+    subgraph MachineLearning[Ensemble Intelligence]
         H1(TF-IDF / Char N-Gram)
         H2(Naive Bayes / LogReg / SVM)
         H3(Random Forest / Gradient Boost)
@@ -49,7 +49,7 @@ graph TD
 
     %% Aggregation
     Forensics --> I[Risk Aggregator & Scoring]
-    Machine Learning --> I
+    MachineLearning --> I
     
     %% Special Analysis Endpoints
     B -- /analyze-security --> Forensics
