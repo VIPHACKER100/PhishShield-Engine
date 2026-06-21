@@ -5,7 +5,7 @@ def test_url_extraction():
     text = "Check this out: http://evil.com and https://192.168.1.1/login"
     urls = extract_urls(text)
     assert len(urls) == 2
-    assert "http://evil.com" in urls
+    assert set(urls) == {"http://evil.com", "https://192.168.1.1/login"}
 
 def test_homograph_detection():
     from src.security.homograph_detector import detect_homograph
