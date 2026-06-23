@@ -1,10 +1,10 @@
-# 💻 PhishShield-Engine: CLI Reference
+# PhishShield-Engine: CLI Reference
 
 The **PhishShield-Engine** includes a powerful command-line interface (`cli/manage.py`) to help administrators orchestrate the system without writing code or hitting API endpoints directly.
 
 ---
 
-## 🚀 1. Starting the Server
+## 1. Starting the Server
 
 Quickly spin up the Uvicorn-backed FastAPI application.
 
@@ -20,7 +20,7 @@ python cli/manage.py serve
 
 ---
 
-## 🛡️ 2. Threat Intelligence Management
+## 2. Threat Intelligence Management
 
 Manually inject malicious domains directly into the Threat Intelligence SQLite database. Future API calls processing emails with this domain will be immediately flagged as `SPAM`.
 
@@ -36,7 +36,7 @@ python cli/manage.py block <domain>
 
 ---
 
-## 📊 3. System Metrics
+## 3. System Metrics
 
 Retrieve a real-time summary of the system's threat blocklist and current intelligence states.
 
@@ -53,7 +53,7 @@ Blocked Domains: 154
 
 ---
 
-## 🛠️ Advanced Automation (Scripts)
+## Advanced Automation (Scripts)
 
 While `manage.py` handles primary runtime tasks, the `scripts/` directory operates the DevOps lifecycle:
 
@@ -63,3 +63,6 @@ While `manage.py` handles primary runtime tasks, the `scripts/` directory operat
 - `python scripts/restore_backup.py <backup_id>`: Restores system registries, metrics, and models from a previously snapshotted environment.
 - `python scripts/chaos_monkey.py`: Stress-test the multi-layered rules engine by injecting adversarial Unicode and obfuscation payloads into the prediction pipeline.
 - `python scripts/backup.py`: Creates a timestamped snapshot of models, threat DBs, and configs.
+
+---
+**Last Updated**: 2026-06-23

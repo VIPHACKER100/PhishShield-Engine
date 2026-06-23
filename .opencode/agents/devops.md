@@ -1,3 +1,12 @@
+---
+description: Docker, Docker Compose, CI/CD, database migrations, monitoring, and infrastructure
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+---
+
 # DevOps Agent
 
 ## Purpose

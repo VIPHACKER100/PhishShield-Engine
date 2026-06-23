@@ -1,10 +1,10 @@
-# 🏛️ PhishShield-Engine: Enterprise Operations Guide
+# PhishShield-Engine: Enterprise Operations Guide
 
 The architecture of **PhishShield-Engine** implements rigorous operations governance for large-scale enterprise deployments. This document describes the disaster recovery, logging, analytics, and intelligence lifecycle components natively running underneath the ML pipeline.
 
 ---
 
-## 🔐 1. Secrets Management API (Zero-Trust)
+## 1. Secrets Management API (Zero-Trust)
 
 To keep private tokens, OpenAI fallbacks, and internal JWT signing keys isolated from source code, PhishShield relies completely on `src/utils/secrets.py`.
 
@@ -16,7 +16,7 @@ To keep private tokens, OpenAI fallbacks, and internal JWT signing keys isolated
 
 ---
 
-## 📈 2. Automated Model Lifecycle (MLOps) & Processing
+## 2. Automated Model Lifecycle (MLOps) & Processing
 
 The internal Machine Learning ecosystem governs its own drift, monitoring, and validation.
 
@@ -27,7 +27,7 @@ The internal Machine Learning ecosystem governs its own drift, monitoring, and v
 
 ---
 
-## 📡 3. Analytics, Explainability (XAI), & Observability
+## 3. Analytics, Explainability (XAI), & Observability
 
 For cybersecurity analysts reviewing inbound traffic spikes:
 
@@ -38,7 +38,7 @@ For cybersecurity analysts reviewing inbound traffic spikes:
 
 ---
 
-## 🐳 4. Docker Optimization
+## 4. Docker Optimization
 
 For enterprise environments requiring fast CI/CD builds, the Docker image includes conditional build parameters and environment injection.
 
@@ -48,7 +48,7 @@ For enterprise environments requiring fast CI/CD builds, the Docker image includ
 
 ---
 
-## ⛓️ 5. Chaos Monkey & Production Load Testing
+## 5. Chaos Monkey & Production Load Testing
 
 To ensure reliability scaling past standard 60-RPM environments limiters:
 
@@ -59,4 +59,4 @@ To ensure reliability scaling past standard 60-RPM environments limiters:
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-06-22
+**Last Updated**: 2026-06-23

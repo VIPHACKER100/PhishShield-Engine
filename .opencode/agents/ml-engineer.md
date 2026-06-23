@@ -1,3 +1,12 @@
+---
+description: ML training, model management, XAI, deep learning, vector search, and hyperparameter tuning
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+---
+
 # ML Engineer Agent
 
 ## Purpose

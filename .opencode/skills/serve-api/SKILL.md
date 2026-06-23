@@ -1,3 +1,8 @@
+---
+name: serve-api
+description: Launch the FastAPI server locally or via Docker Compose with full service stack
+---
+
 # Skill: Serve the FastAPI Server
 
 ## Description

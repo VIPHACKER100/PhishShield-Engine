@@ -1,10 +1,10 @@
-# 📡 PhishShield-Engine: API Documentation
+# PhishShield-Engine: API Documentation
 
 Welcome to the **PhishShield-Engine** API reference. This platform provides a suite of RESTful endpoints for email security, phishing intelligence, and model management.
 
 ---
 
-## 🔐 Authentication & Identity
+## Authentication & Identity
 
 Users must register and login to receive a **JSON Web Token (JWT)**, which must be provided in the `Authorization` header for all protected endpoints.
 
@@ -19,11 +19,11 @@ Users must register and login to receive a **JSON Web Token (JWT)**, which must 
 - **URL**: `/auth/login`
 - **Method**: `POST`
 - **Payload**: `{ "username": "...", "password": "..." }`
-- **Response**: `{ "access_token": "...", "token_type": "bearer" }`
+- **Response**: `{ "token": "...", "username": "..." }`
 
 ---
 
-## 📧 Core Security Endpoints
+## Core Security Endpoints
 
 ### 3. Unified Prediction
 
@@ -60,16 +60,16 @@ Process up to 100 emails in a single request.
 
 ---
 
-## 📊 Intelligence & Reporting
+## Intelligence & Reporting
 
-### 5. Analytics
+### 6. Analytics
 
 Retrieve current performance metrics for all registered models.
 
 - **URL**: `/analytics`
 - **Method**: `GET`
 
-### 6. Feedback Loop
+### 7. Feedback Loop
 
 Submit ground-truth corrections to trigger automated retraining. Feedback is stored in both `data/feedback/feedback_data.csv` and `data/feedback.db` (SQLite).
 
@@ -86,7 +86,7 @@ Submit ground-truth corrections to trigger automated retraining. Feedback is sto
 }
 ```
 
-### 7. Export Security Report
+### 8. Export Security Report
 Phase 63: Forensic Analysis Export. Provides a complete, downloadable forensic breakdown of an email's threat indicators.
 
 - **URL**: `/export-report`
@@ -94,7 +94,7 @@ Phase 63: Forensic Analysis Export. Provides a complete, downloadable forensic b
 - **Payload**: `{ "text": "...", "headers": "..." }`
 - **Response**: Full JSON forensic mapping containing timestamps, extracted URLs, and risk breakdown.
 
-### 8. A/B Testing Analytics
+### 9. A/B Testing Analytics
 
 Returns the real-time split testing summary for active models.
 
@@ -104,15 +104,18 @@ Returns the real-time split testing summary for active models.
 
 ---
 
-## 🛠️ Utility Endpoints
+## Utility Endpoints
 
-### 9. Health Checks & Observability
+### 10. Health Checks & Observability
 
 - `GET /health`: Core system status.
 - `GET /health/ready`: Checks model readiness and DB connections.
 - `GET /metrics`: **Prometheus** metrics endpoint exposing active instrumentations (request counts, latency histograms).
 
-### 10. Interactive Documentation
+### 11. Interactive Documentation
 
 - `GET /docs`: Swagger UI for interactive testing.
 - `GET /redoc`: ReDoc clean documentation view.
+
+---
+**Last Updated**: 2026-06-23

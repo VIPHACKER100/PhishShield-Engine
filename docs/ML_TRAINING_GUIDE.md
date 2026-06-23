@@ -1,10 +1,10 @@
-# 🧠 PhishShield ML Training Guide
+# PhishShield ML Training Guide
 
 This guide covers the end-to-end machine learning lifecycle in PhishShield-Engine, from raw data ingestion to production model registration.
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The PhishShield ML stack is built for **high-throughput forensic classification** with fallback deep semantic understanding.
 
@@ -18,7 +18,7 @@ The PhishShield ML stack is built for **high-throughput forensic classification*
 
 ---
 
-## 🚀 Quick Start: Training your first model
+## Quick Start: Training your first model
 
 If you are setting up for the first time, use the `--generate` flag to create a synthetic dataset:
 
@@ -31,7 +31,7 @@ python scripts/train_pipeline.py --generate --n_samples 5000 --fast
 
 ---
 
-## 🛠️ The Training Pipeline (`train_pipeline.py`)
+## The Training Pipeline (`train_pipeline.py`)
 
 The primary entry point is `scripts/train_pipeline.py`.
 
@@ -84,7 +84,7 @@ python scripts/train_pipeline.py --stem
 
 ---
 
-## 📊 Evaluation & Metrics
+## Evaluation & Metrics
 
 After training, results are saved to `models/metrics.json` and logged to `experiments/experiment_log.json`.
 
@@ -94,7 +94,7 @@ After training, results are saved to `models/metrics.json` and logged to `experi
 
 ---
 
-## 🛡️ Best Practices for Production
+## Best Practices for Production
 
 1.  **Use --fast for Dev**: Iterating on the full 500k dataset takes 10+ minutes. Use `--fast` (50k samples, no ensemble) for testing code changes.
 2.  **Character N-Grams**: Always include `tfidf_char` in your production ensemble to catch obfuscated text.
@@ -104,7 +104,7 @@ After training, results are saved to `models/metrics.json` and logged to `experi
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 | Issue | Solution |
 | :--- | :--- |
@@ -115,4 +115,4 @@ After training, results are saved to `models/metrics.json` and logged to `experi
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-04-03
+**Last Updated**: 2026-06-23

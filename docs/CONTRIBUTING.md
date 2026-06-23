@@ -6,7 +6,7 @@ This guide details exactly how you can set up your environment, contribute new f
 
 ---
 
-## 🛠️ 1. Setup Your Development Environment
+## 1. Setup Your Development Environment
 
 ### Prerequisites
 
@@ -36,7 +36,7 @@ This guide details exactly how you can set up your environment, contribute new f
 
 ---
 
-## 🏗️ 2. Project Architecture & Standards
+## 2. Project Architecture & Standards
 
 Before writing code, please check our [Architecture Guide](ARCHITECTURE.md) and [Developer Guide](developer_guide.md).
 
@@ -54,7 +54,7 @@ Before writing code, please check our [Architecture Guide](ARCHITECTURE.md) and 
 
 ---
 
-## ✅ 3. Running the Test Suite
+## 3. Running the Test Suite
 
 Before opening a pull request, ensure your code doesn't break existing functionality. We use `pytest` for unit testing.
 
@@ -76,7 +76,7 @@ Before opening a pull request, ensure your code doesn't break existing functiona
 
 ---
 
-## 📊 4. Contributing Threat Intelligence & Data
+## 4. Contributing Threat Intelligence & Data
 
 One of the easiest ways to help PhishShield is by submitting new threat indicators!
 
@@ -86,7 +86,7 @@ One of the easiest ways to help PhishShield is by submitting new threat indicato
 
 ---
 
-## 🔄 5. Submitting a Pull Request (PR)
+## 5. Submitting a Pull Request (PR)
 
 1. Create a new branch logically tied to your feature or fix:
 
@@ -111,9 +111,9 @@ One of the easiest ways to help PhishShield is by submitting new threat indicato
    - Why it's necessary.
    - Any new dependencies you added to `requirements.txt` or `setup.py`.
 
-We actively review PRs and will try to get back to you within 48 hours. Happy coding and happy hunting! 🛡️
+We actively review PRs and will try to get back to you within 48 hours. Happy coding and happy hunting!
 
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-04-03
+**Last Updated**: 2026-06-23

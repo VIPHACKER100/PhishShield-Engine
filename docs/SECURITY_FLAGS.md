@@ -1,4 +1,4 @@
-# 🚨 PhishShield-Engine Security Flags
+# PhishShield-Engine Security Flags
 
 PhishShield-Engine uses a deterministic, rule-based forensic scanning engine that runs alongside the machine learning models. Every time an email is analyzed, the system returns a `security_flags` object containing booleans for multiple distinct threats, and calculates a `security_risk_score` from `0` to `100`.
 
@@ -80,4 +80,7 @@ This document explains each of the 10 primary security flags the engine looks fo
 
 ## Conclusion
 
-The aggregate output of these 10 flags is weighted. For example, `brand_spoof` combined with `ip_url` instantly forces a `High Risk (Score: 85+)` rating, ensuring even if the ML model is unsure due to adversarial text tricks, the forensic scanning accurately catches the attack!
+The aggregate output of these 10 flags is weighted. For example, `brand_spoof` combined with `ip_url` instantly forces a `High Risk (Score: 85+)` rating, ensuring even if the ML model is unsure due to adversarial text tricks, the forensic scanning accurately catches the attack.
+
+---
+**Last Updated**: 2026-06-23

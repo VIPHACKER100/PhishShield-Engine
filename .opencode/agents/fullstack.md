@@ -1,3 +1,12 @@
+---
+description: API development, CLI tools, frontend templates, Gmail integration, and database operations
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+---
+
 # Fullstack Agent
 
 ## Purpose

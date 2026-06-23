@@ -1,3 +1,12 @@
+---
+description: Security analysis, forensic scanning, threat intel, and rules engine tasks
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+---
+
 # Security Engineer Agent
 
 ## Purpose

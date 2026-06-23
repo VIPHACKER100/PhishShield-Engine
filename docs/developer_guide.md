@@ -1,12 +1,12 @@
-# 🛡️ PhishShield-Engine: Comprehensive Developer Guide
+# PhishShield-Engine: Comprehensive Developer Guide
 
-## 🎭 Overview
+## Overview
 
 This document provides exhaustive documentation on the architecture, command-line interfaces, and maintenance procedures for the **PhishShield-Engine** platform.
 
 ---
 
-## 🚀 Installation & Build
+## Installation & Build
 
 ### 1. Local Environment Setup
 
@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 ### 2. Model Initialization
 
-You must initialize your models before the first run. For a full deep-dive into the training lifecycle, see the [ML Training Guide](file:///C:/Users/vipha/Desktop/PhishShield-Engine/docs/ML_TRAINING_GUIDE.md).
+You must initialize your models before the first run. For a full deep-dive into the training lifecycle, see the [ML Training Guide](ML_TRAINING_GUIDE.md).
 
 ```bash
 # Recommendation: Quick-start on 50,000 samples (fast mode)
@@ -31,7 +31,7 @@ python scripts/train_pipeline.py --generate --fast
 
 ---
 
-## 🛠️ Command Reference
+## Command Reference
 
 ### I. The Management CLI (`manage.py`)
 
@@ -72,7 +72,7 @@ Handles the entire ML lifecycle from raw data to registered production models.
 
 ---
 
-## 🛡️ Security Core Architecture
+## Security Core Architecture
 
 ### 1. Forensic Intelligence Layer
 
@@ -99,7 +99,7 @@ Control the engine's behavior without modifying code:
 
 ---
 
-## ☁️ Production Orchestration (Docker)
+## Production Orchestration (Docker)
 
 The platform is designed to run as a multi-service architecture using **Docker Compose**:
 
@@ -119,7 +119,7 @@ docker-compose up -d
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## Testing & Quality Assurance
 
 * **Unit Tests**: `python -m pytest tests/`
 
@@ -129,54 +129,49 @@ docker-compose up -d
 
 ---
 
-## 🗺️ Implementation Roadmap (80 Phases)
+## Implementation Roadmap
 
-The evolution of **PhishShield-Engine** followed a rigorous 80-phase roadmap, categorized into logical development layers.
+The evolution of **PhishShield-Engine** followed a phased development roadmap organized into logical layers.
 
-### Phase 1–20: Core Infrastructure & Machine Learning
+### Phase 1-20: Core Infrastructure & Machine Learning
 
 * **Fundamental NLP**: Implementation of TF-IDF and Bag-of-Words vectorizers.
-
 * **Ensemble ML**: Training of Naive Bayes, SVM, and Random Forest classifiers.
 * **REST Gateway**: Building the initial FastAPI structure and Pydantic models.
 * **Cinematic UI**: Developing the glassmorphic frontend for user interaction.
 
-### Phase 21–40: Security Foundations & Forensic Scanning
+### Phase 21-40: Security Foundations & Forensic Scanning
 
 * **URL Intelligence**: Regex-based extraction and basic malicious pattern detection.
-
 * **Homograph Defense**: Detecting IDN (Internationalized Domain Name) spoofing.
 * **Mixed-Script Detection**: Identifying "lookalike" characters from Latin, Greek, and Cyrillic scripts.
 * **Brand Protection (v1)**: Initial fuzzy-matching for top-tier brands like PayPal and Amazon.
 
-### Phase 41–60: Advanced Phishing Intelligence
+### Phase 41-60: Advanced Phishing Intelligence
 
 * **Header Forensics**: SPF, DKIM, and DMARC analysis for sender authenticity.
-
-* **Risk Scoring Engine**: Implementation of the 0–100 weighted scoring system.
+* **Risk Scoring Engine**: Implementation of the 0-100 weighted scoring system.
 * **Explainable AI (XAI)**: Generation of human-readable justifications for security alerts.
 * **Local Threat Hub**: SQLite-backed persistent database for domain blocklisting.
 
-### Phase 61–75: Enterprise Governance & Operations
+### Phase 61-75: Enterprise Governance & Operations
 
 * **Configuration Management**: Centralized YAML-based settings for security weights.
-
 * **Data Governance**: GDPR-ready retention policies and persistent audit logging.
 * **Dockerization**: Containerizing the platform for environment parity and deployment.
 * **Developer CLI**: Building the `manage.py` tool for operational productivity.
 
-### Phase 76–80: Resilience, Automation & Final Production
+### Phase 76-80: Resilience, Automation & Final Production
 
 * **Feedback Loop**: Implementing automated logic for model retraining based on live user data.
-
 * **Chaos Engineering**: Stress-testing system resilience using failure injectors.
 * **Production Verification**: Full-spectrum forensic testing and final brand alignment.
 * **PhishShield Launch**: Rebranding and final stabilization of the production engine.
 
 ---
 
-## 👨‍💻 Maintainer
+## Maintainer
 
 **VIPHACKER100 (Aryan Ahirwar)**
 *Cybersecurity Researcher | AI Security Lead*
-*Last Updated: 2026-04-03*
+*Last Updated: 2026-06-23*

@@ -1,10 +1,10 @@
-# 🏗️ PhishShield-Engine Architecture
+# PhishShield-Engine Architecture
 
 This document provides a high-level overview of the **PhishShield-Engine** system architecture, detailing how the various components—from text preprocessing and forensic scanning to ensemble machine learning and the API gateway—interact to classify and flag threats in real-time.
 
 ---
 
-## 🗺️ High-Level System Diagram
+## High-Level System Diagram
 
 At its core, PhishShield-Engine relies on a multi-stage pipeline where an incoming email passes through a **Pre-flight Filter**, a **Forensic Security Scan**, and an **Ensemble ML Inference** engine before a normalized output and explanation are generated.
 
@@ -68,7 +68,7 @@ graph TD
 
 ---
 
-## ⚙️ Core Components Description
+## Core Components Description
 
 ### 1. API Interface & Traffic Routing (`src/api/`)
 

@@ -1,8 +1,8 @@
-# ✉️ Gmail Integration Guide
+# Gmail Integration Guide
 
 PhishShield-Engine comes with native support for scanning your Gmail inbox using the official Google API. This enables the engine to automatically classify incoming emails, log security risk scores, and flag threats right from your live mailbox!
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### 1. Create a Google Cloud Project
 
@@ -70,4 +70,4 @@ You can wire this `scan_inbox()` call to a cronjob, an internal task scheduler, 
 ---
 
 **Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-04-03
+**Last Updated**: 2026-06-23

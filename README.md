@@ -1,10 +1,10 @@
-# 🛡️ PhishShield-Engine
+# PhishShield-Engine
 
 **PhishShield-Engine** is an AI-powered email security platform designed to detect spam, phishing attacks, malicious URLs, homograph spoofing, and identity impersonation using advanced machine learning and multi-layer forensic intelligence.
 
 ---
 
-## 🚀 GitHub Repository
+## GitHub Repository
 
 ```text
 PhishShield-Engine
@@ -12,7 +12,7 @@ PhishShield-Engine
 
 ---
 
-## 🧠 Short Description
+## Short Description
 
 AI-powered email security engine that identifies spam, phishing, and identity spoofing using ensemble machine learning and advanced cybersecurity heuristics.
 
@@ -20,9 +20,9 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 
 ---
 
-## 🔥 Key Technical Features
+## Key Technical Features
 
-### �️ Core Security Intelligence
+### Core Security Intelligence
 
 - **Phishing Detection**: Specialized logic for identifying social engineering and credential theft attempts.
 - **Obfuscation Defense (Phase 85)**: Advanced detection of zero-width characters and hidden markers used to bypass traditional filters.
@@ -30,7 +30,7 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 - **Fuzzy Brand Protection**: Detects impersonation of 15+ major global brands (PayPal, Amazon, Google, etc.).
 - **Header Forensics**: Deep validation of SPF/DKIM/DMARC and detection of sender-domain mismatches.
 
-### 🧠 Machine Learning Engine
+### Machine Learning Engine
 
 - **Ensemble Intelligence**: High-performance voting classifier combining Naive Bayes, SVM, and Random Forests.
 - **Deep Learning & RAG**: Transformer-based inference (`bert-base-uncased`) augmented by ChromaDB-powered Vector Search for semantic threat matching.
@@ -38,7 +38,7 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 - **Explainable AI (XAI)**: Generates human-readable justifications and local feature importance via **SHAP** for heuristic and ML flags.
 - **Adaptive Learning**: Automated retraining scheduler that updates models based on live user feedback, persisted via a central **SQLAlchemy ORM**.
 
-### ⚙️ Operations & Scalability
+### Operations & Scalability
 
 - **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database) managed by `docker-compose` with `.env` injection.
 - **Database Migrations**: Automated schema versioning via **Alembic** mapped to PostgreSQL/SQLite via SQLAlchemy.
@@ -48,7 +48,7 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Environment Setup
 
@@ -78,7 +78,7 @@ Open [http://localhost:8000](http://localhost:8000) for the Interactive Security
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 PhishShield-Engine/
@@ -106,21 +106,21 @@ PhishShield-Engine/
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **VIPHACKER100 (Aryan Ahirwar)**
 Cybersecurity Researcher | AI Security Developer
-*Last Updated: 2026-06-22*
+*Last Updated: 2026-06-23*
 
 ---
 
-## ⚖️ License & Disclaimer
+## License & Disclaimer
 
 This tool is for educational and defensive security purposes only. Licensed under MIT.
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 Detailed technical documentation is available in the `docs/` directory:
 
@@ -135,7 +135,7 @@ Detailed technical documentation is available in the `docs/` directory:
 
 ---
 
-## ⭐ Contribute
+## Contribute
 
 Contributions are highly welcome! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) to log setup PRs and get started.
 

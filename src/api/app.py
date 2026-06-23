@@ -40,7 +40,7 @@ async def lifespan(app):
 app = FastAPI(
     title="Email Spam Classifier API",
     description="Classify emails as Spam or Ham using ML models.",
-    version="2.0.0",
+    version="3.1.0",
     lifespan=lifespan,
 )
 

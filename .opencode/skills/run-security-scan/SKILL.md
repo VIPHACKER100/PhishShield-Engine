@@ -1,8 +1,13 @@
+---
+name: run-security-scan
+description: Run forensic security analysis (10 scanners) on email text via Python API or REST endpoint
+---
+
 # Skill: Run Security Analysis
 
 ## Description
 
-Executes the PhishShield-Engine forensic security scanning pipeline against email text. Runs all 10 independent security scanners (homograph, brand spoofing, URL obfuscation, header forensics, etc.) and returns a weighted risk score (0–100) with detailed threat reasons and security flags.
+Executes the PhishShield-Engine forensic security scanning pipeline against email text. Runs all 10 independent security scanners (homograph, brand spoofing, URL obfuscation, header forensics, etc.) and returns a weighted risk score (0-100) with detailed threat reasons and security flags.
 
 ## Prerequisites
 
@@ -108,9 +113,9 @@ curl -X POST http://localhost:8000/export-report \
 
 | Score Range | Level |
 |-------------|-------|
-| 0–29 | LOW |
-| 30–74 | SUSPICIOUS |
-| 75–100 | HIGH RISK |
+| 0-29 | LOW |
+| 30-74 | SUSPICIOUS |
+| 75-100 | HIGH RISK |
 
 ## Configuration
 
@@ -123,7 +128,6 @@ security:
     brand_spoof: 45
     domain_blacklist: 60
     cyrillic_url: 50
-    # ...
   thresholds:
     high_risk: 75
     suspicious: 30

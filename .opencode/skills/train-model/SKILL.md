@@ -1,3 +1,8 @@
+---
+name: train-model
+description: Train ML models on email datasets using the full training pipeline with synthetic or real data
+---
+
 # Skill: Train ML Models
 
 ## Description
