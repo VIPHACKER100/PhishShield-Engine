@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/opencode-ai/schemas/main/opencode.json",
+  "skills": [
+    {
+      "name": "train-model",
+      "path": ".opencode/skills/train-model.md",
+      "description": "Train ML models on email datasets using the full training pipeline with synthetic or real data",
+      "command": "python scripts/train_pipeline.py"
+    },
+    {
+      "name": "run-security-scan",
+      "path": ".opencode/skills/run-security-scan.md",
+      "description": "Run forensic security analysis (10 scanners) on email text via Python API or REST endpoint",
+      "command": "python -c \"from src.security.risk_scoring import calculate_security_risk; print(calculate_security_risk('test'))\""
+    },
+    {
+      "name": "serve-api",
+      "path": ".opencode/skills/serve-api.md",
+      "description": "Launch the FastAPI server locally or via Docker Compose with full service stack",
+      "command": "python cli/manage.py serve"
+    },
+    {
+      "name": "security-engineer",
+      "path": ".opencode/agents/security-engineer.md",
+      "description": "Security analysis, forensic scanning, threat intel, and rules engine tasks",
+      "workspaces": ["src/security/", "config/", "data/threat_intel.db"]
+    },
+    {
+      "name": "ml-engineer",
+      "path": ".opencode/agents/ml-engineer.md",
+      "description": "ML training, model management, XAI, deep learning, vector search, and hyperparameter tuning",
+      "workspaces": ["src/models/", "src/features/", "src/preprocessing/", "models/", "experiments/", "notebooks/", "data/feedback/", "scripts/train_pipeline.py", "scripts/retrain_scheduler.py"]
+    },
+    {
+      "name": "devops",
+      "path": ".opencode/agents/devops.md",
+      "description": "Docker, Docker Compose, CI/CD, database migrations, monitoring, and infrastructure",
+      "workspaces": ["Dockerfile", "docker-compose.yml", "config/", ".github/", "alembic/", "scripts/backup.py", "scripts/restore_backup.py", "scripts/chaos_monkey.py", "scripts/benchmark.py"]
+    },
+    {
+      "name": "fullstack",
+      "path": ".opencode/agents/fullstack.md",
+      "description": "API development, CLI tools, frontend templates, Gmail integration, and database operations",
+      "workspaces": ["src/api/", "src/core/", "src/integrations/", "src/utils/", "cli/", "tests/test_api.py"]
+    }
+  ]
+}

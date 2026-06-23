@@ -22,7 +22,7 @@ The internal Machine Learning ecosystem governs its own drift, monitoring, and v
 
 - **Background Queueing (ARQ & Redis):** High-latency predictions and background tasks (like `check_drift` and `trigger_security_alert`) are decoupled from the FastAPI request cycle using **ARQ** backed by Redis.
 - **A/B Testing:** Multi-pipeline inference runs internally handled by `src/models/ab_testing.py` where traffic can dynamically split between Naive Bayes, SVM, and Transformers.
-- **Retrain Daemon:** `scripts/retrain_scheduler.py` is an asynchronous worker. It analyzes records in the unified **SQLAlchemy ORM** feedback table and initiates GridSearch without server downtime.
+- **Retrain Daemon:** `scripts/retrain_scheduler.py` is an asynchronous worker. It analyzes records in `data/feedback.db` (SQLite) and initiates GridSearch without server downtime. Feedback is also mirrored to `data/feedback/feedback_data.csv`.
 - **Deep Learning Architecture Base:** `src/models/deep_learning.py` runs Transformer pipelines (`bert-base-uncased`) and leverages ChromaDB semantic caching to avoid repeated inferences.
 
 ---
@@ -31,7 +31,7 @@ The internal Machine Learning ecosystem governs its own drift, monitoring, and v
 
 For cybersecurity analysts reviewing inbound traffic spikes:
 
-- `POST /export-report`: Compiles an immediately readable mapping merging all 9 active Forensic Rules alongside the Scikit-learn outputs.
+- `POST /export-report`: Compiles an immediately readable mapping merging all 10 active Forensic Rules (including `cyrillic_url`) alongside the Scikit-learn outputs.
 - `GET /metrics`: Native **Prometheus** endpoint exposing model inference latencies, API request rates, and active threat detection histograms. Ideal for Grafana integrations.
 - **SHAP Integration:** The XAI pipeline utilizes `shap.LinearExplainer` to explicitly assign weight and threat contribution to individual tokens in the email body.
 - **Unified DB Migrations:** Schema evolution (like adding new feedback columns) is managed deterministically via **Alembic**, ensuring zero-downtime database upgrades.

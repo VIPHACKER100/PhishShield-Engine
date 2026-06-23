@@ -61,7 +61,8 @@ graph TD
     J --> K[Final Risk Object]
     
     %% Logging & Storage
-    K --> L[(SQLAlchemy ORM + Alembic DB)]
+    K --> L[(Threat Logging DB)]
+    K --> FDB[(Feedback DB: SQLite + CSV)]
     K -->|Actionable Response| A
 ```
 
@@ -86,6 +87,7 @@ graph TD
 This is the deterministic, rules-based engine that acts adjacent to the ML predictors.
 
 - **Homograph Protection**: Checks string buffers against the Latin, Cyrillic, and Greek unicode pools. Flags if a character looks like a standard Latin `A` but resolves to a Cyrillic character visually hiding a malicious domain.
+- **Cyrillic URL Detection**: Explicitly scans extracted URLs for characters in the Cyrillic Unicode block (`[\u0400-\u04FF]`) to catch homograph attacks in raw links.
 - **URL & Zero-width Obfuscation**: Scans for embedded zero-width joiners (`\u200D` or `\u200B`) that attackers insert into body text to bypass spam-filters looking for common keywords.
 - **Brand Intelligence**: Conducts aggressive fuzzy-matching on specific protected brand lists (e.g., Apple, PayPal). Calculates the Levenshtein distance against known safe domains.
 
@@ -99,4 +101,4 @@ This is the deterministic, rules-based engine that acts adjacent to the ML predi
 
 ### 5. Config Governance (`config/config.yaml`)
 
-Risk thresholds, model tuning grid-search parameters, security flag weights, and compliance retention windows are completely decoupled from runtime code. They are fetched from `config.yaml` using the built-in `config_loader` upon app boot.
+Risk thresholds, model tuning grid-search parameters, security flag weights (including `cyrillic_url: 50`), and compliance retention windows are completely decoupled from runtime code. They are fetched from `config.yaml` using the built-in `config_loader` upon app boot.

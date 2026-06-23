@@ -27,6 +27,8 @@ If you are setting up for the first time, use the `--generate` flag to create a 
 python scripts/train_pipeline.py --generate --n_samples 5000 --fast
 ```
 
+> **Note:** The `--fast` flag now uses `sample_size=50000` and skips ensemble training by default.
+
 ---
 
 ## 🛠️ The Training Pipeline (`train_pipeline.py`)
@@ -96,8 +98,9 @@ After training, results are saved to `models/metrics.json` and logged to `experi
 
 1.  **Use --fast for Dev**: Iterating on the full 500k dataset takes 10+ minutes. Use `--fast` (50k samples, no ensemble) for testing code changes.
 2.  **Character N-Grams**: Always include `tfidf_char` in your production ensemble to catch obfuscated text.
-3.  **Regular Retraining**: Use the built-in feedback loop. User-reported "False Negatives" are stored in `data/feedback.db`.
+3.  **Regular Retraining**: Use the built-in feedback loop. User-reported "False Negatives" are stored in `data/feedback.db` (SQLite) and mirrored to `data/feedback/feedback_data.csv`.
 4.  **Registration**: The pipeline automatically calls `src.models.registry.register_model()`. The `predict.py` script always loads the model marked as `best_model` in the registry.
+5.  **Dependency Stability**: Pin `numpy==1.26.4` in your environment to avoid model pickle incompatibility across numpy versions.
 
 ---
 

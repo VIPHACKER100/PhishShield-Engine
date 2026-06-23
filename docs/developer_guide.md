@@ -16,7 +16,7 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS/Linux
 
-# Install All Dependencies
+# Install All Dependencies (numpy pinned to 1.26.4 for model compatibility)
 pip install -r requirements.txt
 ```
 
@@ -76,7 +76,7 @@ Handles the entire ML lifecycle from raw data to registered production models.
 
 ### 1. Forensic Intelligence Layer
 
-The `calculate_security_risk` function (in `src/security/risk_scoring.py`) executes 9 independent forensic scans:
+The `calculate_security_risk` function (in `src/security/risk_scoring.py`) executes 10 independent forensic scans:
 
 * **Obfuscation Scan**: Detects zero-width icons/markers via `src/security/obfuscation_detector.py`.
 * **Homograph Scan**: Identifies "lookalike" Unicode domains (punycode detection).
@@ -87,12 +87,13 @@ The `calculate_security_risk` function (in `src/security/risk_scoring.py`) execu
 * **IP-Based URLs**: Detecting raw IP addresses in message links.
 * **Suspicious URLs**: Heuristic analysis of URL entropy and path patterns.
 * **Behavioral Threat**: Statistical mapping of text-based threat indicators.
+* **Cyrillic URL Spoofing**: Detects Cyrillic characters embedded in URLs (weight: 50).
 
 ### 2. Governance-as-Code (`config/config.yaml`)
 
 Control the engine's behavior without modifying code:
 
-* **Weights**: Adjust the risk contribution of each forensic flag.
+* **Weights**: Adjust the risk contribution of each forensic flag (including `cyrillic_url: 50`).
 * **Thresholds**: Define "High Risk" and "Suspicious" cutoffs.
 * **Compliance**: Define auto-retention days (Default: 30 days).
 
@@ -103,14 +104,18 @@ Control the engine's behavior without modifying code:
 The platform is designed to run as a multi-service architecture using **Docker Compose**:
 
 ```bash
-# Launch API, Threat DB, and Retraining Scheduler
+# Launch API, Threat DB, and Retraining Scheduler (with model training)
 docker-compose up --build -d
+
+# Or build without training (use pre-trained models from models/ directory)
+docker build --target base -t phishshield-base .
+docker-compose up -d
 ```
 
 * **Service API**: Exposes the port `8000`.
-
 * **Service Scheduler**: Runs the automated retraining watcher.
 * **Persistence**: Volumes are mapped for `data/` and `logs/` to prevent loss during restarts.
+* **Training Control**: Set `TRAIN_MODELS=false` build arg to skip training during image build (use pre-trained models).
 
 ---
 
@@ -120,6 +125,7 @@ docker-compose up --build -d
 
 * **Integration Tests**: `python scripts/chaos_monkey.py` (Simulates failure scenarios)
 * **Compliance Audit**: View `logs/compliance.log` to audit data retention and forensic overrides.
+* **Warning Suppression**: Tests use `tests/conftest.py` to suppress httpx deprecation and LGBM feature name warnings.
 
 ---
 

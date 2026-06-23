@@ -57,8 +57,9 @@ Blocked Domains: 154
 
 While `manage.py` handles primary runtime tasks, the `scripts/` directory operates the DevOps lifecycle:
 
-- `python scripts/train_pipeline.py`: Triggers an immediate vectorization, dataset parsing, and ML training routine. Use `--ensemble` to stack all 3 models.
+- `python scripts/train_pipeline.py`: Triggers an immediate vectorization, dataset parsing, and ML training routine. Use `--ensemble` to stack all models (voting/stacking). Use `--fast` for quick iteration (50k samples, no ensemble).
 - `python scripts/benchmark.py`: Fires an `asyncio` stress test delivering thousands of bulk payloads to evaluate API latency.
-- `python scripts/retrain_scheduler.py`: A daemon process monitoring `feedback.db`. Runs `train_pipeline.py` silently in the background if threshold drift occurs.
+- `python scripts/retrain_scheduler.py`: A daemon process monitoring `data/feedback.db` (SQLite). Runs `train_pipeline.py` silently in the background if threshold drift occurs.
 - `python scripts/restore_backup.py <backup_id>`: Restores system registries, metrics, and models from a previously snapshotted environment.
 - `python scripts/chaos_monkey.py`: Stress-test the multi-layered rules engine by injecting adversarial Unicode and obfuscation payloads into the prediction pipeline.
+- `python scripts/backup.py`: Creates a timestamped snapshot of models, threat DBs, and configs.

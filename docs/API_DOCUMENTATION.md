@@ -48,7 +48,7 @@ Phase 49: Deep forensic analysis without ML overhead.
 - **URL**: `/analyze-security`
 - **Method**: `POST`
 - **Payload**: `{ "text": "...", "headers": "..." }`
-- **Response**: Detailed JSON including `risk_score`, `risk_level`, and specific `security_flags`.
+- **Response**: Detailed JSON including `risk_score`, `risk_level`, and specific `security_flags` (10 flags including `cyrillic_url`).
 
 ### 5. Batch Analysis
 
@@ -71,7 +71,7 @@ Retrieve current performance metrics for all registered models.
 
 ### 6. Feedback Loop
 
-Submit ground-truth corrections to trigger automated retraining.
+Submit ground-truth corrections to trigger automated retraining. Feedback is stored in both `data/feedback/feedback_data.csv` and `data/feedback.db` (SQLite).
 
 - **URL**: `/feedback`
 - **Method**: `POST`
@@ -79,9 +79,10 @@ Submit ground-truth corrections to trigger automated retraining.
 
 ```json
 {
-  "text": "...",
+  "email_text": "...",
   "predicted_label": "ham",
-  "correct_label": "spam"
+  "correct_label": "spam",
+  "model_used": "naive_bayes"
 }
 ```
 
