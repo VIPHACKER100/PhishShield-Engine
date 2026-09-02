@@ -21,6 +21,8 @@ Users must register and login to receive a **JSON Web Token (JWT)**, which must 
 | Rate limit — reset | **3 requests / minute** per IP |
 | User enumeration | All auth failure responses are identical — no distinction between "wrong password" and "no such user" |
 | API key comparison | Constant-time via `hmac.compare_digest()` — no timing oracle |
+| Bot detection | Empty `User-Agent` blocked on all API routes; malicious scanners blacklisted |
+| Honeypot traps | Hidden `bot_trap` field in request payloads; populated values → HTTP 422 |
 
 ---
 
@@ -174,6 +176,51 @@ X-API-Key: pse_<api key>
 
 ---
 
+## Abuse Protection & Anti-Bot Controls
+
+All API endpoints are protected by multi-layer abuse controls applied at the middleware level (`src/api/app.py`).
+
+### Per-IP Rate Limits
+
+| Endpoint | Limit |
+|---|---|
+| `POST /predict` | 15 / minute |
+| `POST /analyze-security` | 15 / minute |
+| `POST /predict/batch` | 5 / minute |
+| `POST /export-report` | 10 / minute |
+| `POST /feedback` | 10 / minute |
+| `POST /auth/login` | 5 / minute |
+| `POST /auth/register` | 3 / minute |
+| `POST /auth/password-reset-request` | 3 / minute |
+| `POST /auth/password-reset` | 5 / minute |
+| **Global default** | 60 / minute |
+
+Exceeded limits return **HTTP 429** with `{ "detail": "Rate limit exceeded. Please slow down your requests." }` and are logged to `logs/security_audit.log`.
+
+### Anti-Bot Middleware
+
+Every request to API paths (`/predict`, `/auth/*`, `/analyze-security`, `/export-report`, `/feedback`) passes through `anti_bot_middleware`:
+
+1. **Honeypot Header Check** — Requests containing `X-Honeypot-Trap` or `X-Bot-Check` headers are immediately rejected (HTTP 403). Bots that blindly populate all available headers trigger this trap.
+2. **User-Agent Enforcement** — Requests with an empty or missing `User-Agent` header are rejected (HTTP 403).
+3. **Scanner Blacklist** — Requests from known malicious tools are blocked (HTTP 403): `sqlmap`, `nikto`, `nmap`, `masscan`, `bytespider`, `zgrab`, `libwww-perl`, `python-urllib`, `dirbuster`, `w3af`, `acunetix`, `nessus`, `openvas`.
+
+All blocked requests log a `BOT_ATTACK_BLOCKED`, `SCRAPER_BLOCKED`, or `BOT_HONEYPOT_TRIGGERED` event to `logs/security_audit.log`.
+
+### Honeypot Payload Fields
+
+`PredictRequest` and `RegisterRequest` include a hidden `bot_trap` field that **must always be empty or absent**. Automated scripts that populate all fields will fail schema validation:
+
+```json
+// ✅ Legitimate request — bot_trap absent or empty
+{ "text": "Email content here" }
+
+// ❌ Bot request — bot_trap populated → HTTP 422
+{ "text": "Email content here", "bot_trap": "auto-filled" }
+```
+
+---
+
 ## Core Security Endpoints
 
 ### 5. Unified Prediction
@@ -201,9 +248,10 @@ Deep forensic analysis without ML overhead.
 
 ### 7. Batch Analysis
 
-Process up to 100 emails in a single request.
+Process up to **50 emails** in a single request (capped to prevent bulk data scraping).
 
 - **URL**: `POST /predict/batch`
+- **Rate limit**: **5 / minute** per IP
 - **Auth required**: Bearer token or X-API-Key
 - **Payload**: `{ "emails": ["text1", "text2"...], "model_name": "svm" }`
 
@@ -267,11 +315,12 @@ Full forensic breakdown of an email's threat indicators.
 
 | HTTP Code | Meaning |
 |-----------|---------|
-| `401` | Invalid credentials, locked account, or expired/invalid token |
-| `409` | Username or email already exists |
-| `422` | Validation error (password policy, field length, etc.) |
-| `429` | Rate limit exceeded — slow down requests |
 | `400` | Invalid or expired password reset token |
+| `401` | Invalid credentials, locked account, or expired/invalid token |
+| `403` | Bot detected — empty User-Agent, blacklisted scanner, or honeypot header triggered |
+| `409` | Username or email already exists |
+| `422` | Validation error (password policy, field length, `bot_trap` populated, etc.) |
+| `429` | Rate limit exceeded — slow down requests |
 | `503` | Models not yet trained / service not ready |
 
 ---

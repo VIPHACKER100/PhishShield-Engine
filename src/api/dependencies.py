@@ -3,11 +3,8 @@ from typing import Optional
 from src.api.auth import verify_token, verify_api_key, get_user_by_username
 from src.core.database import User
 from src.models.ab_testing import ABTest
-from src.models.drift_monitor import DriftMonitor
-
 # Global instances
 ab_test = ABTest("naive_bayes", "svm", split=0.5)
-drift_monitor = DriftMonitor()
 
 async def optional_auth(request: Request) -> Optional[User]:
     """

@@ -1,7 +1,10 @@
 import os
 from datetime import datetime, timezone
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from arq import create_pool
 from arq.connections import RedisSettings
 
@@ -14,6 +17,7 @@ from src.utils.logger import logger
 from src.utils.anonymizer import anonymize_text
 
 router = APIRouter(tags=["predict"])
+_limiter = Limiter(key_func=get_remote_address)
 
 # ---------------------------------------------------------------------------
 # ARQ pool (lazy-initialized)
@@ -34,37 +38,40 @@ async def _get_arq_pool():
 
 
 # ---------------------------------------------------------------------------
-# Endpoints
+# Endpoints (with per-IP Rate Limiting & Anti-Abuse Controls)
 # ---------------------------------------------------------------------------
 
 @router.post("/predict")
-async def predict(request: PredictRequest):
+@_limiter.limit("15/minute")
+async def predict(request: Request, body: PredictRequest):
     try:
-        model_name = request.model
+        model_name = body.model
         if model_name is None:
             model_name = ab_test.select()
 
-        result = predict_email(request.text, model_name, request.headers or "")
+        result = predict_email(body.text, model_name, body.headers or "")
         logger.info("Email prediction: %s", result['prediction'])
 
         # Enqueue background tasks via ARQ (falls back to sync if Redis unavailable)
         pool = await _get_arq_pool()
         if pool:
-            await pool.enqueue_job("check_drift", request.text, result['prediction'])
+            await pool.enqueue_job("check_drift", body.text, result['prediction'])
             if result.get("security_risk_score", 0) >= 75:
                 await pool.enqueue_job("send_security_alert", "Phishing Detection", result)
         else:
             # Sync fallback when Redis is not available (e.g., local dev)
             from src.models.drift_monitor import DriftMonitor
-            DriftMonitor().check([request.text], [result['prediction']])
+            DriftMonitor().check([body.text], [result['prediction']])
 
         return result
     except Exception as e:
         logger.error("Prediction error: %s", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/analyze-security")
-async def analyze_security_endpoint(body: PredictRequest):
+@_limiter.limit("15/minute")
+async def analyze_security_endpoint(request: Request, body: PredictRequest):
     from src.security.risk_scoring import calculate_security_risk
     try:
         analysis = calculate_security_risk(body.text, body.headers or "")
@@ -73,8 +80,10 @@ async def analyze_security_endpoint(body: PredictRequest):
         logger.error("Security analysis error: %s", e)
         raise HTTPException(status_code=500, detail="Security scanning failed")
 
+
 @router.post("/predict/batch")
-async def predict_batch_endpoint(body: BatchPredictRequest, request: Request, user: str = Depends(optional_auth)):
+@_limiter.limit("5/minute")
+async def predict_batch_endpoint(request: Request, body: BatchPredictRequest, user: Optional[User] = Depends(optional_auth)):
     try:
         results = predict_batch(body.emails, body.model_name)
         return {"results": results, "count": len(results)}
@@ -84,8 +93,10 @@ async def predict_batch_endpoint(body: BatchPredictRequest, request: Request, us
         logger.error("Batch prediction error: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Internal prediction error")
 
+
 @router.post("/export-report")
-async def export_report_endpoint(body: PredictRequest):
+@_limiter.limit("10/minute")
+async def export_report_endpoint(request: Request, body: PredictRequest):
     from src.security.risk_scoring import calculate_security_risk
     from src.security.url_extractor import extract_urls
     try:
@@ -101,8 +112,10 @@ async def export_report_endpoint(body: PredictRequest):
         logger.error("Export report error: %s", e)
         raise HTTPException(status_code=500, detail="Failed to generate report")
 
+
 @router.post("/feedback")
-async def submit_feedback(body: FeedbackRequest, user: Optional[User] = Depends(optional_auth)):
+@_limiter.limit("10/minute")
+async def submit_feedback(request: Request, body: FeedbackRequest, user: Optional[User] = Depends(optional_auth)):
     clean_text = anonymize_text(body.email_text)
     user_id = user.id if user else None
     entry = save_feedback(

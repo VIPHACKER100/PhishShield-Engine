@@ -1,6 +1,6 @@
 """
 FastAPI Application — Main API server with prediction, batch, analytics,
-authentication, rate limiting, security headers, and security audit logging.
+authentication, rate limiting, security headers, anti-bot protection, and security audit logging.
 """
 
 import os
@@ -24,6 +24,13 @@ from src.core.database import init_db
 
 _ENV = os.environ.get("ENV", "dev").lower()
 _ENFORCE_HTTPS = os.environ.get("ENFORCE_HTTPS", "false").lower() in ("true", "1")
+
+# Blacklisted bot / scanner User-Agents
+_BOT_USER_AGENTS = {
+    "sqlmap", "nikto", "nmap", "masscan", "gocurl", "bytespider",
+    "zgrab", "libwww-perl", "python-urllib", "dirbuster", "w3af",
+    "acunetix", "nessus", "openvas"
+}
 
 # ---------------------------------------------------------------------------
 # Lifespan — run setup/teardown around the app lifecycle
@@ -63,6 +70,40 @@ Instrumentator().instrument(app).expose(app)
 # HTTPS Enforcement Middleware in production or when explicitly enabled
 if _ENFORCE_HTTPS or (_ENV == "prod" and os.environ.get("ENABLE_HTTPS_REDIRECT", "false").lower() == "true"):
     app.add_middleware(HTTPSRedirectMiddleware)
+
+# ---------------------------------------------------------------------------
+# Anti-Bot & Abuse Protection Middleware
+# ---------------------------------------------------------------------------
+
+@app.middleware("http")
+async def anti_bot_middleware(request: Request, call_next):
+    """
+    Inspect incoming requests to block malicious bots, automated scanners,
+    empty User-Agents on API routes, and honeypot traps.
+    """
+    client_ip = get_remote_address(request)
+    path = request.url.path.lower()
+    user_agent = request.headers.get("User-Agent", "").strip()
+
+    # 1. Honeypot Trap Header Check
+    if request.headers.get("X-Honeypot-Trap") or request.headers.get("X-Bot-Check"):
+        log_security_event("BOT_HONEYPOT_TRIGGERED", client_ip=client_ip, detail=f"Path={path} UA={user_agent}")
+        return JSONResponse(status_code=403, content={"detail": "Automated access detected and blocked."})
+
+    # 2. API Routes: Enforce non-empty User-Agent
+    api_prefixes = ("/predict", "/auth/", "/analyze-security", "/export-report", "/feedback")
+    if any(path.startswith(prefix) for prefix in api_prefixes):
+        if not user_agent:
+            log_security_event("BOT_BLOCKED_EMPTY_UA", client_ip=client_ip, detail=f"Path={path}")
+            return JSONResponse(status_code=403, content={"detail": "User-Agent header is required for API access."})
+
+        # 3. Malicious Scraper / Bot User-Agent Blacklist
+        ua_lower = user_agent.lower()
+        if any(bot in ua_lower for bot in _BOT_USER_AGENTS):
+            log_security_event("BOT_ATTACK_BLOCKED", client_ip=client_ip, detail=f"Path={path} UA={user_agent}")
+            return JSONResponse(status_code=403, content={"detail": "Automated request pattern blocked."})
+
+    return await call_next(request)
 
 # ---------------------------------------------------------------------------
 # Rate limiting & RateLimitExceeded Security Logging

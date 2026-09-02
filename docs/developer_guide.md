@@ -110,11 +110,22 @@ Handles the entire ML lifecycle from raw data to registered production models.
 
 ### 2. Rate Limiting (`SlowAPI`)
 
-- `/auth/login`: 5 requests/min per IP
-- `/auth/register`: 3 requests/min per IP
-- `/auth/password-reset-request`: 3 requests/min per IP
-- `/auth/password-reset`: 5 requests/min per IP
-- Global API limit: 60 requests/min per IP
+**Auth Endpoints (per IP):**
+- `/auth/login`: 5 requests/min
+- `/auth/register`: 3 requests/min
+- `/auth/password-reset-request`: 3 requests/min
+- `/auth/password-reset`: 5 requests/min
+
+**Prediction & AI Endpoints (per IP):**
+- `POST /predict`: 15 requests/min
+- `POST /analyze-security`: 15 requests/min
+- `POST /predict/batch`: 5 requests/min
+- `POST /export-report`: 10 requests/min
+- `POST /feedback`: 10 requests/min
+
+**Global default**: 60 requests/min per IP
+
+All rate limit violations are logged as `RATE_LIMIT_EXCEEDED` events to `logs/security_audit.log`.
 
 ### 3. Database Schema & Migrations (`src/core/database.py`, `alembic/`)
 
@@ -128,6 +139,18 @@ The `users` table includes security governance fields:
 - `password_reset_expires` (datetime)
 
 Schema revisions are maintained via Alembic (`alembic/versions/8eb220da558a8768_add_auth_security_fields.py`).
+
+### 4. Abuse Protection & Anti-Bot Middleware (`src/api/app.py`)
+
+PhishShield enforces three bot-detection layers via `anti_bot_middleware` applied before every API handler:
+
+- **Honeypot Header Trap**: Requests containing `X-Honeypot-Trap` or `X-Bot-Check` headers are blocked (HTTP 403). Legitimate clients never send these headers.
+- **User-Agent Enforcement**: All API paths require a non-empty `User-Agent` header. Missing headers indicate scripted or raw socket clients (HTTP 403).
+- **Scanner Blacklist**: Requests from known exploit and scraping tools (`sqlmap`, `nikto`, `nmap`, `masscan`, `bytespider`, `zgrab`, `libwww-perl`, `python-urllib`, `dirbuster`, `w3af`, `acunetix`, `nessus`, `openvas`) are blocked (HTTP 403).
+- **Honeypot Payload Fields**: `PredictRequest` and `RegisterRequest` include a hidden `bot_trap` field. Any non-empty value triggers Pydantic validation failure (HTTP 422).
+- **Batch Size Cap**: `POST /predict/batch` rejects arrays exceeding **50 emails** to prevent bulk data harvesting.
+
+All blocked events are logged to `logs/security_audit.log` with event types `BOT_ATTACK_BLOCKED`, `BOT_BLOCKED_EMPTY_UA`, and `BOT_HONEYPOT_TRIGGERED`.
 
 ### 4. Forensic Intelligence Layer
 
@@ -176,9 +199,12 @@ docker-compose up -d
 
 ## Testing & Quality Assurance
 
-* **Unit & Security Tests**: `python -m pytest tests/` or `python -m pytest tests/test_auth_unit.py -v`
+* **Auth & Security Unit Tests**: `python -m pytest tests/test_auth_unit.py -v` (21 tests)
+* **Abuse Protection Tests**: `python -m pytest tests/test_abuse_protection.py -v` (29 tests)
+* **Full Test Suite**: `python -m pytest tests/ -v`
 * **Integration Tests**: `python scripts/chaos_monkey.py` (Simulates failure scenarios)
 * **Compliance Audit**: View `logs/compliance.log` to audit data retention and forensic overrides.
+* **Security Audit Log**: View `logs/security_audit.log` for authentication events, rate limit violations, and bot blocking.
 * **Warning Suppression**: Tests use `tests/conftest.py` to suppress httpx deprecation and LGBM feature name warnings.
 
 ---
