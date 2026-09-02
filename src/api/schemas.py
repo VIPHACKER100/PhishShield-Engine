@@ -11,6 +11,7 @@ from src.utils.sanitizer import (
 MAX_TEXT_LENGTH = 50_000
 MAX_HEADER_LENGTH = 10_000
 
+
 class PredictRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH)
     model: Optional[str] = None
@@ -42,6 +43,7 @@ class PredictRequest(BaseModel):
             raise ValueError("Bot activity detected via honeypot input.")
         return v
 
+
 class BatchPredictRequest(BaseModel):
     model_config = {"protected_namespaces": ()}
 
@@ -58,6 +60,7 @@ class BatchPredictRequest(BaseModel):
     @classmethod
     def check_batch_model_name(cls, v: Optional[str]) -> Optional[str]:
         return validate_model_name(v)
+
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -89,6 +92,7 @@ class RegisterRequest(BaseModel):
             raise ValueError("Bot registration attempt detected.")
         return v
 
+
 class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=1, max_length=128)
@@ -98,8 +102,10 @@ class LoginRequest(BaseModel):
     def check_login_username(cls, v: str) -> str:
         return validate_username(v)
 
+
 class PasswordResetRequestSchema(BaseModel):
     """Request a password-reset token to be sent out-of-band (e.g. email)."""
+
     username: str = Field(..., min_length=1, max_length=50)
 
     @field_validator("username")
@@ -107,8 +113,10 @@ class PasswordResetRequestSchema(BaseModel):
     def check_reset_username(cls, v: str) -> str:
         return validate_username(v)
 
+
 class PasswordResetSchema(BaseModel):
     """Consume a password-reset token and set a new password."""
+
     username: str = Field(..., min_length=1, max_length=50)
     token: str = Field(..., min_length=1, max_length=128)
     new_password: str = Field(..., min_length=8, max_length=128)
@@ -122,6 +130,7 @@ class PasswordResetSchema(BaseModel):
     @classmethod
     def check_reset_token(cls, v: str) -> str:
         return validate_token(v)
+
 
 class FeedbackRequest(BaseModel):
     model_config = {"protected_namespaces": ()}

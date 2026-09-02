@@ -26,7 +26,7 @@ from src.utils.logger import logger
 VECTORIZER_TYPES: dict[str, type] = {
     "bow": CountVectorizer,
     "tfidf": TfidfVectorizer,
-    "tfidf_char": TfidfVectorizer,   # character n-gram variant
+    "tfidf_char": TfidfVectorizer,  # character n-gram variant
 }
 
 # Sensible defaults that work well for email phishing / spam detection
@@ -100,7 +100,8 @@ def fit_and_save(
     joblib.dump(vec, path)
     logger.info(
         "Fitted %s vectorizer — vocab=%d features, matrix=%s → saved to %s",
-        method.upper(), X_transformed.shape[1],
+        method.upper(),
+        X_transformed.shape[1],
         "×".join(str(d) for d in X_transformed.shape),
         path,
     )
@@ -117,6 +118,7 @@ def load_vectorizer(path: str = "models/vectorizer.pkl"):
 # ---------------------------------------------------------------------------
 # Security feature matrix (unchanged from v1)
 # ---------------------------------------------------------------------------
+
 
 def extract_security_matrix(texts: list):
     """

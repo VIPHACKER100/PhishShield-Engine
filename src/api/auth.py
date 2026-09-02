@@ -28,9 +28,9 @@ from src.core.database import SessionLocal, User, UsageLog
 # Configuration — tune via environment variables
 # ---------------------------------------------------------------------------
 
-JWT_SECRET: str = vault.get("JWT_SECRET")          # Must be set; vault raises in prod if absent
+JWT_SECRET: str = vault.get("JWT_SECRET")  # Must be set; vault raises in prod if absent
 JWT_ALGORITHM: str = "HS256"
-JWT_EXPIRY_HOURS: int = int(os.environ.get("JWT_EXPIRY_HOURS", "1"))   # Default: 1 hour
+JWT_EXPIRY_HOURS: int = int(os.environ.get("JWT_EXPIRY_HOURS", "1"))  # Default: 1 hour
 LOGIN_MAX_ATTEMPTS: int = int(os.environ.get("LOGIN_MAX_ATTEMPTS", "5"))
 LOGIN_LOCKOUT_MINUTES: int = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", "15"))
 RESET_TOKEN_EXPIRY_HOURS: int = int(os.environ.get("RESET_TOKEN_EXPIRY_HOURS", "1"))
@@ -38,6 +38,7 @@ RESET_TOKEN_EXPIRY_HOURS: int = int(os.environ.get("RESET_TOKEN_EXPIRY_HOURS", "
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _hash_token(raw_token: str) -> str:
     """Return a SHA-256 hex digest of a raw token for safe DB storage."""
@@ -53,20 +54,25 @@ def _is_locked(user: User) -> bool:
 
 from src.utils.logger import logger, log_security_event
 
+
 def _record_failed_login(session, user: User, client_ip: str = "N/A") -> None:
     """Increment failure counter and lock the account when the threshold is exceeded."""
     user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
     if user.failed_login_attempts >= LOGIN_MAX_ATTEMPTS:
-        user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=LOGIN_LOCKOUT_MINUTES)
+        user.locked_until = datetime.now(timezone.utc) + timedelta(
+            minutes=LOGIN_LOCKOUT_MINUTES
+        )
         logger.warning(
             "Account '%s' locked for %d minutes after %d failed attempts.",
-            user.username, LOGIN_LOCKOUT_MINUTES, user.failed_login_attempts,
+            user.username,
+            LOGIN_LOCKOUT_MINUTES,
+            user.failed_login_attempts,
         )
         log_security_event(
             "ACCOUNT_LOCKED",
             client_ip=client_ip,
             username=user.username,
-            detail=f"Locked for {LOGIN_LOCKOUT_MINUTES} min after {user.failed_login_attempts} failed attempts"
+            detail=f"Locked for {LOGIN_LOCKOUT_MINUTES} min after {user.failed_login_attempts} failed attempts",
         )
     session.commit()
 
@@ -77,9 +83,11 @@ def _reset_login_counter(session, user: User) -> None:
     user.locked_until = None
     session.commit()
 
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def init_db():
     """No-op. Database schema is initialized via src.core.database.init_db."""
@@ -136,7 +144,9 @@ def register_user(username: str, password: str, email: str | None = None) -> dic
         session.close()
 
 
-def authenticate_user(username: str, password: str, client_ip: str = "N/A") -> dict | None:
+def authenticate_user(
+    username: str, password: str, client_ip: str = "N/A"
+) -> dict | None:
     """
     Validate credentials and return a short-lived JWT token.
 
@@ -156,7 +166,12 @@ def authenticate_user(username: str, password: str, client_ip: str = "N/A") -> d
         # Account lockout check
         if _is_locked(user):
             logger.warning("Login attempt on locked account: %s", username)
-            log_security_event("AUTH_FAILURE", client_ip=client_ip, username=username, detail="Locked account login attempt")
+            log_security_event(
+                "AUTH_FAILURE",
+                client_ip=client_ip,
+                username=username,
+                detail="Locked account login attempt",
+            )
             return None
 
         # Verify password
@@ -179,7 +194,11 @@ def authenticate_user(username: str, password: str, client_ip: str = "N/A") -> d
             JWT_SECRET,
             algorithm=JWT_ALGORITHM,
         )
-        return {"token": token, "username": username, "expires_in": JWT_EXPIRY_HOURS * 3600}
+        return {
+            "token": token,
+            "username": username,
+            "expires_in": JWT_EXPIRY_HOURS * 3600,
+        }
     finally:
         session.close()
 
@@ -234,7 +253,9 @@ def request_password_reset(username: str) -> str | None:
 
         raw_token = secrets.token_urlsafe(32)
         user.password_reset_token_hash = _hash_token(raw_token)
-        user.password_reset_expires = datetime.now(timezone.utc) + timedelta(hours=RESET_TOKEN_EXPIRY_HOURS)
+        user.password_reset_expires = datetime.now(timezone.utc) + timedelta(
+            hours=RESET_TOKEN_EXPIRY_HOURS
+        )
         session.commit()
 
         logger.info("Password reset token issued for user: %s", username)
@@ -281,7 +302,9 @@ def reset_password(username: str, raw_token: str, new_password: str) -> bool:
             return False
 
         # Update password and clear reset fields
-        user.password_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+        user.password_hash = bcrypt.hashpw(
+            new_password.encode(), bcrypt.gensalt()
+        ).decode()
         user.password_reset_token_hash = None
         user.password_reset_expires = None
         user.failed_login_attempts = 0
@@ -297,7 +320,9 @@ def reset_password(username: str, raw_token: str, new_password: str) -> bool:
         session.close()
 
 
-def log_usage(user_id: int | None, endpoint: str, request_body: str, response_body: str):
+def log_usage(
+    user_id: int | None, endpoint: str, request_body: str, response_body: str
+):
     """Log an API usage record."""
     session = SessionLocal()
     try:
@@ -329,11 +354,17 @@ def get_user_by_username(username: str) -> User | None:
 # Ownership-checked resource access (IDOR Prevention)
 # ---------------------------------------------------------------------------
 
+
 def get_user_logs(user_id: int) -> list[dict]:
     """Retrieve usage logs strictly filtered by user_id."""
     session = SessionLocal()
     try:
-        logs = session.query(UsageLog).filter_by(user_id=user_id).order_by(UsageLog.id.desc()).all()
+        logs = (
+            session.query(UsageLog)
+            .filter_by(user_id=user_id)
+            .order_by(UsageLog.id.desc())
+            .all()
+        )
         return [
             {
                 "id": l.id,
@@ -376,9 +407,12 @@ def get_user_feedback_by_id(feedback_id: int, user_id: int) -> dict | None:
     Strictly verifies ownership: feedback.user_id == user_id. Returns None if not owned.
     """
     from src.core.database import Feedback as DBFeedback
+
     session = SessionLocal()
     try:
-        fb = session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        fb = (
+            session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        )
         if fb is None:
             return None
         return {
@@ -400,9 +434,12 @@ def delete_user_feedback(feedback_id: int, user_id: int) -> bool:
     Strictly verifies ownership: feedback.user_id == user_id. Returns False if not owned.
     """
     from src.core.database import Feedback as DBFeedback
+
     session = SessionLocal()
     try:
-        fb = session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        fb = (
+            session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        )
         if fb is None:
             return False
         session.delete(fb)
@@ -414,4 +451,3 @@ def delete_user_feedback(feedback_id: int, user_id: int) -> bool:
         raise
     finally:
         session.close()
-

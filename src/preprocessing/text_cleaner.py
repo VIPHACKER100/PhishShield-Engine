@@ -22,6 +22,7 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 try:
     import nltk
+
     for _pkg in ("punkt", "punkt_tab", "stopwords"):
         nltk.download(_pkg, quiet=True)
     from nltk.corpus import stopwords as _nltk_stopwords
@@ -46,6 +47,7 @@ _RE_WHITESPACE = re.compile(r"\s+")
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API — vectorised (operate on a whole Series at once)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def vectorized_clean(series: pd.Series) -> pd.Series:
     """
@@ -94,6 +96,7 @@ def stem_series(series: pd.Series, n_jobs: int = 1) -> pd.Series:
         return series.apply(_stem_row)
 
     from multiprocessing import Pool
+
     with Pool(processes=n_jobs) as pool:
         stemmed = pool.map(_stem_row, series.tolist())
     return pd.Series(stemmed, index=series.index)
@@ -103,11 +106,12 @@ def stem_series(series: pd.Series, n_jobs: int = 1) -> pd.Series:
 # DataFrame-level entry point (called by the pipeline)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def preprocess_dataframe(
     df: pd.DataFrame,
     text_column: str = "text",
     remove_stops: bool = True,
-    stem: bool = False,       # off by default — adds time without much gain
+    stem: bool = False,  # off by default — adds time without much gain
     n_jobs: int = 1,
 ) -> pd.DataFrame:
     """
@@ -139,6 +143,7 @@ def preprocess_dataframe(
 # Legacy single-string API (kept for backwards compatibility with tests/CLI)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def preprocess_text(text: str) -> str:
     """Process a single string through the cleaning pipeline."""
     s = pd.Series([text])
@@ -151,18 +156,23 @@ def preprocess_text(text: str) -> str:
 def to_lowercase(text: str) -> str:
     return text.lower()
 
+
 def remove_punctuation(text: str) -> str:
     s = _RE_PUNCT.sub(" ", text)
     return _RE_WHITESPACE.sub(" ", s).strip()
 
+
 def remove_numbers(text: str) -> str:
     return _RE_NUMBER.sub("", text)
+
 
 def tokenize(text: str) -> list[str]:
     return text.split()
 
+
 def remove_stopwords(tokens: list[str]) -> list[str]:
     return [t for t in tokens if t not in _STOP_WORDS]
+
 
 def stem_tokens(tokens: list[str]) -> list[str]:
     if not _NLTK_AVAILABLE:

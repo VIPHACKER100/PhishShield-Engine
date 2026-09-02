@@ -10,9 +10,18 @@ from typing import Optional
 
 # Regex Patterns
 _USERNAME_RE = re.compile(r"^[a-zA-Z0-9_-]{3,50}$")
-_DOMAIN_RE = re.compile(r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$")
+_DOMAIN_RE = re.compile(
+    r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$"
+)
 _TOKEN_RE = re.compile(r"^[a-zA-Z0-9._-]{1,128}$")
-_ALLOWED_MODELS = {"naive_bayes", "svm", "ensemble", "transformers", "deep_learning", "unknown"}
+_ALLOWED_MODELS = {
+    "naive_bayes",
+    "svm",
+    "ensemble",
+    "transformers",
+    "deep_learning",
+    "unknown",
+}
 _ALLOWED_LABELS = {"spam", "ham"}
 
 # Control Character Pattern (preserves \n, \r, \t, removes ASCII control chars 0-31 except 9,10,13 and 127)
@@ -62,7 +71,9 @@ def validate_domain(domain: str) -> str:
         raise ValueError("Domain is required.")
     clean = domain.strip().lower()
     if not _DOMAIN_RE.match(clean):
-        raise ValueError("Invalid domain name format. Must be a valid FQDN (e.g. malicious-site.com).")
+        raise ValueError(
+            "Invalid domain name format. Must be a valid FQDN (e.g. malicious-site.com)."
+        )
     return clean
 
 
@@ -87,7 +98,9 @@ def validate_model_name(name: Optional[str]) -> Optional[str]:
         return None
     clean = name.strip().lower()
     if clean not in _ALLOWED_MODELS:
-        raise ValueError(f"Invalid model name '{name}'. Allowed models: {', '.join(sorted(_ALLOWED_MODELS))}")
+        raise ValueError(
+            f"Invalid model name '{name}'. Allowed models: {', '.join(sorted(_ALLOWED_MODELS))}"
+        )
     return clean
 
 

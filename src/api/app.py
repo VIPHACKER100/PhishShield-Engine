@@ -18,7 +18,12 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from src.utils.logger import logger, security_logger, log_security_event, generate_request_id
+from src.utils.logger import (
+    logger,
+    security_logger,
+    log_security_event,
+    generate_request_id,
+)
 from src.api.routers import auth, predict, analytics
 from src.core.database import init_db
 
@@ -27,14 +32,26 @@ _ENFORCE_HTTPS = os.environ.get("ENFORCE_HTTPS", "false").lower() in ("true", "1
 
 # Blacklisted bot / scanner User-Agents
 _BOT_USER_AGENTS = {
-    "sqlmap", "nikto", "nmap", "masscan", "gocurl", "bytespider",
-    "zgrab", "libwww-perl", "python-urllib", "dirbuster", "w3af",
-    "acunetix", "nessus", "openvas"
+    "sqlmap",
+    "nikto",
+    "nmap",
+    "masscan",
+    "gocurl",
+    "bytespider",
+    "zgrab",
+    "libwww-perl",
+    "python-urllib",
+    "dirbuster",
+    "w3af",
+    "acunetix",
+    "nessus",
+    "openvas",
 }
 
 # ---------------------------------------------------------------------------
 # Lifespan — run setup/teardown around the app lifecycle
 # ---------------------------------------------------------------------------
+
 
 @asynccontextmanager
 async def lifespan(app):
@@ -43,6 +60,7 @@ async def lifespan(app):
     logger.info("Database tables initialized.")
     log_security_event("SYSTEM_STARTUP", "127.0.0.1", "system", f"Environment: {_ENV}")
     yield
+
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -53,8 +71,12 @@ app = FastAPI(
     description="Classify emails as Spam or Ham using ML models and multi-layered security heuristics.",
     version="3.1.0",
     lifespan=lifespan,
-    docs_url="/docs" if _ENV != "prod" else None,     # Disable Swagger UI in production unless configured
-    redoc_url="/redoc" if _ENV != "prod" else None,   # Disable ReDoc in production unless configured
+    docs_url=(
+        "/docs" if _ENV != "prod" else None
+    ),  # Disable Swagger UI in production unless configured
+    redoc_url=(
+        "/redoc" if _ENV != "prod" else None
+    ),  # Disable ReDoc in production unless configured
 )
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
@@ -68,12 +90,16 @@ app.include_router(analytics.router)
 Instrumentator().instrument(app).expose(app)
 
 # HTTPS Enforcement Middleware in production or when explicitly enabled
-if _ENFORCE_HTTPS or (_ENV == "prod" and os.environ.get("ENABLE_HTTPS_REDIRECT", "false").lower() == "true"):
+if _ENFORCE_HTTPS or (
+    _ENV == "prod"
+    and os.environ.get("ENABLE_HTTPS_REDIRECT", "false").lower() == "true"
+):
     app.add_middleware(HTTPSRedirectMiddleware)
 
 # ---------------------------------------------------------------------------
 # Anti-Bot & Abuse Protection Middleware
 # ---------------------------------------------------------------------------
+
 
 @app.middleware("http")
 async def anti_bot_middleware(request: Request, call_next):
@@ -87,23 +113,49 @@ async def anti_bot_middleware(request: Request, call_next):
 
     # 1. Honeypot Trap Header Check
     if request.headers.get("X-Honeypot-Trap") or request.headers.get("X-Bot-Check"):
-        log_security_event("BOT_HONEYPOT_TRIGGERED", client_ip=client_ip, detail=f"Path={path} UA={user_agent}")
-        return JSONResponse(status_code=403, content={"detail": "Automated access detected and blocked."})
+        log_security_event(
+            "BOT_HONEYPOT_TRIGGERED",
+            client_ip=client_ip,
+            detail=f"Path={path} UA={user_agent}",
+        )
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Automated access detected and blocked."},
+        )
 
     # 2. API Routes: Enforce non-empty User-Agent
-    api_prefixes = ("/predict", "/auth/", "/analyze-security", "/export-report", "/feedback")
+    api_prefixes = (
+        "/predict",
+        "/auth/",
+        "/analyze-security",
+        "/export-report",
+        "/feedback",
+    )
     if any(path.startswith(prefix) for prefix in api_prefixes):
         if not user_agent:
-            log_security_event("BOT_BLOCKED_EMPTY_UA", client_ip=client_ip, detail=f"Path={path}")
-            return JSONResponse(status_code=403, content={"detail": "User-Agent header is required for API access."})
+            log_security_event(
+                "BOT_BLOCKED_EMPTY_UA", client_ip=client_ip, detail=f"Path={path}"
+            )
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "User-Agent header is required for API access."},
+            )
 
         # 3. Malicious Scraper / Bot User-Agent Blacklist
         ua_lower = user_agent.lower()
         if any(bot in ua_lower for bot in _BOT_USER_AGENTS):
-            log_security_event("BOT_ATTACK_BLOCKED", client_ip=client_ip, detail=f"Path={path} UA={user_agent}")
-            return JSONResponse(status_code=403, content={"detail": "Automated request pattern blocked."})
+            log_security_event(
+                "BOT_ATTACK_BLOCKED",
+                client_ip=client_ip,
+                detail=f"Path={path} UA={user_agent}",
+            )
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "Automated request pattern blocked."},
+            )
 
     return await call_next(request)
+
 
 # ---------------------------------------------------------------------------
 # Rate limiting & RateLimitExceeded Security Logging
@@ -113,17 +165,20 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 app.state.limiter = limiter
 
 
-async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
+async def custom_rate_limit_handler(
+    request: Request, exc: RateLimitExceeded
+) -> Response:
     client_ip = get_remote_address(request)
     log_security_event(
         "RATE_LIMIT_EXCEEDED",
         client_ip=client_ip,
-        detail=f"Path={request.url.path} Limit={exc.detail}"
+        detail=f"Path={request.url.path} Limit={exc.detail}",
     )
     return JSONResponse(
         status_code=429,
-        content={"detail": "Rate limit exceeded. Please slow down your requests."}
+        content={"detail": "Rate limit exceeded. Please slow down your requests."},
     )
+
 
 app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 app.add_middleware(SlowAPIMiddleware)
@@ -131,6 +186,7 @@ app.add_middleware(SlowAPIMiddleware)
 # ---------------------------------------------------------------------------
 # Middleware — Request ID, Security Headers, and Error Audit Logging
 # ---------------------------------------------------------------------------
+
 
 @app.middleware("http")
 async def security_and_request_middleware(request: Request, call_next):
@@ -144,7 +200,11 @@ async def security_and_request_middleware(request: Request, call_next):
 
     logger.info(
         "[%s] %s %s → %s (%.3fs)",
-        req_id, request.method, request.url.path, response.status_code, duration,
+        req_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration,
         extra={"request_id": req_id},
     )
 
@@ -154,7 +214,9 @@ async def security_and_request_middleware(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains; preload"
+    )
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -168,13 +230,13 @@ async def security_and_request_middleware(request: Request, call_next):
         log_security_event(
             "SERVER_ERROR",
             client_ip=client_ip,
-            detail=f"Method={request.method} Path={request.url.path} Status={response.status_code}"
+            detail=f"Method={request.method} Path={request.url.path} Status={response.status_code}",
         )
     elif response.status_code in (400, 401, 403, 404, 422):
         log_security_event(
             "CLIENT_ERROR",
             client_ip=client_ip,
-            detail=f"Method={request.method} Path={request.url.path} Status={response.status_code}"
+            detail=f"Method={request.method} Path={request.url.path} Status={response.status_code}",
         )
 
     return response
@@ -183,6 +245,7 @@ async def security_and_request_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 # Pages
 # ---------------------------------------------------------------------------
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -197,6 +260,7 @@ async def dashboard(request: Request):
 # ---------------------------------------------------------------------------
 # Health & Readiness
 # ---------------------------------------------------------------------------
+
 
 @app.get("/health")
 async def health():

@@ -31,6 +31,7 @@ from src.api.schemas import (
 # 1. Text Sanitization (XSS, Null Bytes, Control Chars)
 # ---------------------------------------------------------------------------
 
+
 class TestTextSanitization:
     def test_html_script_tags_escaped(self):
         raw = "Hello <script>alert('xss')</script> world!"
@@ -72,6 +73,7 @@ class TestTextSanitization:
 # 2. Username Regex Validation
 # ---------------------------------------------------------------------------
 
+
 class TestUsernameValidation:
     def test_valid_usernames(self):
         assert validate_username("alice") == "alice"
@@ -107,6 +109,7 @@ class TestUsernameValidation:
 # 3. Domain Validation
 # ---------------------------------------------------------------------------
 
+
 class TestDomainValidation:
     def test_valid_domains(self):
         assert validate_domain("example.com") == "example.com"
@@ -129,6 +132,7 @@ class TestDomainValidation:
 # ---------------------------------------------------------------------------
 # 4. Token & Whitelist Validation
 # ---------------------------------------------------------------------------
+
 
 class TestTokenAndWhitelistValidation:
     def test_valid_tokens(self):
@@ -160,6 +164,7 @@ class TestTokenAndWhitelistValidation:
 # 5. Schema Validation Integration
 # ---------------------------------------------------------------------------
 
+
 class TestSchemaValidationIntegration:
     def test_predict_request_escapes_html(self):
         req = PredictRequest(text="Check this <script>alert(1)</script>")
@@ -172,7 +177,11 @@ class TestSchemaValidationIntegration:
 
     def test_register_request_rejects_email_newline(self):
         with pytest.raises(ValidationError):
-            RegisterRequest(username="validuser", password="Secure@Password1!", email="test@example.com\r\nBcc: evil@hacker.io")
+            RegisterRequest(
+                username="validuser",
+                password="Secure@Password1!",
+                email="test@example.com\r\nBcc: evil@hacker.io",
+            )
 
     def test_login_request_rejects_invalid_username(self):
         with pytest.raises(ValidationError):
@@ -180,8 +189,14 @@ class TestSchemaValidationIntegration:
 
     def test_password_reset_rejects_malformed_token(self):
         with pytest.raises(ValidationError):
-            PasswordResetSchema(username="validuser", token="token with spaces!", new_password="NewSecure@Pass1!")
+            PasswordResetSchema(
+                username="validuser",
+                token="token with spaces!",
+                new_password="NewSecure@Pass1!",
+            )
 
     def test_feedback_request_validates_labels(self):
         with pytest.raises(ValidationError):
-            FeedbackRequest(email_text="test", predicted_label="unknown_label", correct_label="ham")
+            FeedbackRequest(
+                email_text="test", predicted_label="unknown_label", correct_label="ham"
+            )

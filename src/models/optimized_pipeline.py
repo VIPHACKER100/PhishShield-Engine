@@ -15,11 +15,13 @@ _NUM_RE = re.compile(r"\d+")
 # Pre-load stopwords once
 try:
     from nltk.corpus import stopwords as _sw
+
     _STOPWORDS = frozenset(_sw.words("english"))
 except Exception:
     _STOPWORDS = frozenset()
 
 from nltk.stem import PorterStemmer
+
 _STEMMER = PorterStemmer()
 
 
@@ -33,7 +35,11 @@ class OptimizedPipeline:
         self.vectorizer = joblib.load(vectorizer_path)
         self.model = joblib.load(model_path)
         self._has_proba = hasattr(self.model, "predict_proba")
-        logger.info("OptimizedPipeline loaded: vectorizer=%s model=%s", vectorizer_path, model_path)
+        logger.info(
+            "OptimizedPipeline loaded: vectorizer=%s model=%s",
+            vectorizer_path,
+            model_path,
+        )
 
     def _preprocess(self, text: str) -> str:
         """Optimized preprocessing with compiled regex and cached stopwords."""
@@ -63,7 +69,9 @@ class OptimizedPipeline:
         if self._has_proba:
             probas = self.model.predict_proba(features)
             for pred, proba in zip(predictions, probas):
-                results.append({"prediction": pred, "confidence": round(float(max(proba)), 4)})
+                results.append(
+                    {"prediction": pred, "confidence": round(float(max(proba)), 4)}
+                )
         else:
             for pred in predictions:
                 results.append({"prediction": pred, "confidence": None})

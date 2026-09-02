@@ -91,7 +91,9 @@ def list_models(status: str | None = None) -> list[dict]:
 def get_active_model(model_name: str) -> dict | None:
     """Get the latest active version of a model."""
     entries = _load_registry()
-    candidates = [e for e in entries if e["model_name"] == model_name and e["status"] == "active"]
+    candidates = [
+        e for e in entries if e["model_name"] == model_name and e["status"] == "active"
+    ]
     return max(candidates, key=lambda e: e["version"]) if candidates else None
 
 
@@ -107,5 +109,9 @@ def archive_model(model_name: str, version: int):
 
 def get_best_model() -> dict | None:
     """Return the active model with the highest F1 score."""
-    entries = [e for e in _load_registry() if e["status"] == "active" and "f1_score" in e.get("metrics", {})]
+    entries = [
+        e
+        for e in _load_registry()
+        if e["status"] == "active" and "f1_score" in e.get("metrics", {})
+    ]
     return max(entries, key=lambda e: e["metrics"]["f1_score"]) if entries else None

@@ -5,6 +5,7 @@ Script Detector — Detect suspicious mixing of Latin, Greek, Cyrillic, and othe
 import unicodedata
 from collections import Counter
 
+
 def detect_script_types(text: str) -> dict:
     """Analyze the distribution of scripts in the text."""
     if not text:
@@ -26,11 +27,11 @@ def detect_script_types(text: str) -> dict:
 
     counts = Counter(scripts)
     total = sum(counts.values())
-    
+
     latin_count = counts.get("LATIN", 0)
     greek_count = counts.get("GREEK", 0)
     cyrillic_count = counts.get("CYRILLIC", 0)
-    
+
     # Calculate ratios
     ratios = {
         "latin_ratio": round(latin_count / total, 3),
@@ -39,10 +40,6 @@ def detect_script_types(text: str) -> dict:
     }
 
     # Signal mixed scripts if non-Latin scripts are present alongside Latin
-    mixed_script = (latin_count > 0 and (greek_count > 0 or cyrillic_count > 0))
-    
-    return {
-        **ratios,
-        "mixed_script": mixed_script,
-        "script_counts": dict(counts)
-    }
+    mixed_script = latin_count > 0 and (greek_count > 0 or cyrillic_count > 0)
+
+    return {**ratios, "mixed_script": mixed_script, "script_counts": dict(counts)}

@@ -20,41 +20,49 @@ os.environ.setdefault("ENV", "dev")
 # Honeypot Field Validation (schema-level)
 # ---------------------------------------------------------------------------
 
+
 class TestHoneypotValidation:
     """PredictRequest and RegisterRequest bot_trap field must reject non-empty values."""
 
     def test_predict_request_empty_bot_trap_passes(self):
         from src.api.schemas import PredictRequest
+
         req = PredictRequest(text="Hello test email", bot_trap="")
         assert req.bot_trap == ""
 
     def test_predict_request_none_bot_trap_passes(self):
         from src.api.schemas import PredictRequest
+
         req = PredictRequest(text="Hello test email")
         assert req.bot_trap == ""
 
     def test_predict_request_populated_bot_trap_raises(self):
         from pydantic import ValidationError
         from src.api.schemas import PredictRequest
+
         with pytest.raises(ValidationError) as exc_info:
-            PredictRequest(text="Hello test email", bot_trap="I am a bot filling all fields")
+            PredictRequest(
+                text="Hello test email", bot_trap="I am a bot filling all fields"
+            )
         errors = exc_info.value.errors()
         assert any("Bot activity" in str(e) for e in errors)
 
     def test_register_request_populated_bot_trap_raises(self):
         from pydantic import ValidationError
         from src.api.schemas import RegisterRequest
+
         with pytest.raises(ValidationError) as exc_info:
             RegisterRequest(
                 username="botuser",
                 password="Secure@123",
-                bot_trap="auto-filled by script"
+                bot_trap="auto-filled by script",
             )
         errors = exc_info.value.errors()
         assert any("Bot" in str(e) for e in errors)
 
     def test_register_request_empty_bot_trap_passes(self):
         from src.api.schemas import RegisterRequest
+
         req = RegisterRequest(username="realuser", password="Secure@123", bot_trap="")
         assert req.bot_trap == ""
 
@@ -63,28 +71,33 @@ class TestHoneypotValidation:
 # Batch Size Cap (schema-level)
 # ---------------------------------------------------------------------------
 
+
 class TestBatchSizeCap:
     """BatchPredictRequest must reject lists exceeding 50 emails."""
 
     def test_batch_of_50_emails_passes(self):
         from src.api.schemas import BatchPredictRequest
+
         req = BatchPredictRequest(emails=["email body"] * 50)
         assert len(req.emails) == 50
 
     def test_batch_of_51_emails_raises(self):
         from pydantic import ValidationError
         from src.api.schemas import BatchPredictRequest
+
         with pytest.raises(ValidationError):
             BatchPredictRequest(emails=["email body"] * 51)
 
     def test_batch_of_1_email_passes(self):
         from src.api.schemas import BatchPredictRequest
+
         req = BatchPredictRequest(emails=["single email"])
         assert len(req.emails) == 1
 
     def test_empty_batch_raises(self):
         from pydantic import ValidationError
         from src.api.schemas import BatchPredictRequest
+
         with pytest.raises(ValidationError):
             BatchPredictRequest(emails=[])
 
@@ -94,10 +107,22 @@ class TestBatchSizeCap:
 # ---------------------------------------------------------------------------
 
 _BOT_USER_AGENTS = {
-    "sqlmap", "nikto", "nmap", "masscan", "gocurl", "bytespider",
-    "zgrab", "libwww-perl", "python-urllib", "dirbuster", "w3af",
-    "acunetix", "nessus", "openvas"
+    "sqlmap",
+    "nikto",
+    "nmap",
+    "masscan",
+    "gocurl",
+    "bytespider",
+    "zgrab",
+    "libwww-perl",
+    "python-urllib",
+    "dirbuster",
+    "w3af",
+    "acunetix",
+    "nessus",
+    "openvas",
 }
+
 
 def _is_blacklisted_ua(user_agent: str) -> bool:
     """Mirror of app.py bot detection logic."""
@@ -133,10 +158,13 @@ class TestBotUserAgentBlacklist:
         assert _is_blacklisted_ua("DirBuster-1.0") is True
 
     def test_legitimate_chrome_allowed(self):
-        assert _is_blacklisted_ua(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        ) is False
+        assert (
+            _is_blacklisted_ua(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            )
+            is False
+        )
 
     def test_legitimate_api_client_allowed(self):
         assert _is_blacklisted_ua("PhishShieldClient/1.0") is False
@@ -156,10 +184,17 @@ class TestBotUserAgentBlacklist:
 # Middleware Path Matching Logic
 # ---------------------------------------------------------------------------
 
+
 class TestApiPathMatching:
     """Anti-bot middleware applies to specific API path prefixes only."""
 
-    API_PREFIXES = ("/predict", "/auth/", "/analyze-security", "/export-report", "/feedback")
+    API_PREFIXES = (
+        "/predict",
+        "/auth/",
+        "/analyze-security",
+        "/export-report",
+        "/feedback",
+    )
 
     def _is_api_path(self, path: str) -> bool:
         return any(path.lower().startswith(prefix) for prefix in self.API_PREFIXES)

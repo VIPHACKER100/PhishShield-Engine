@@ -64,8 +64,7 @@ ITEMS = ["iPhone", "laptop", "vacation", "car", "tablet", "watch", "TV", "camera
 def _fill_template(template: str) -> str:
     """Fill a template string with random placeholder values."""
     return (
-        template
-        .replace("{name}", random.choice(NAMES))
+        template.replace("{name}", random.choice(NAMES))
         .replace("{item}", random.choice(ITEMS))
         .replace("{amount}", str(random.randint(50, 50000)))
         .replace("{percent}", str(random.randint(5, 80)))
@@ -80,8 +79,12 @@ def generate_sample_dataset(path: str, n: int = 1000) -> pd.DataFrame:
     """
     rows = []
     for _ in range(n // 2):
-        rows.append({"text": _fill_template(random.choice(SPAM_TEMPLATES)), "label": "spam"})
-        rows.append({"text": _fill_template(random.choice(HAM_TEMPLATES)), "label": "ham"})
+        rows.append(
+            {"text": _fill_template(random.choice(SPAM_TEMPLATES)), "label": "spam"}
+        )
+        rows.append(
+            {"text": _fill_template(random.choice(HAM_TEMPLATES)), "label": "ham"}
+        )
     random.shuffle(rows)
     df = pd.DataFrame(rows)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -118,9 +121,7 @@ def load_dataset(path: str) -> pd.DataFrame:
 
     # ── text column ──────────────────────────────────────────────────────────
     if "text" not in df.columns:
-        matched = next(
-            (a for a in _TEXT_ALIASES if a in df.columns or a in cols), None
-        )
+        matched = next((a for a in _TEXT_ALIASES if a in df.columns or a in cols), None)
         if matched is None:
             # last resort: pick the first string-typed column
             str_cols = [c for c in df.columns if df[c].dtype == object]

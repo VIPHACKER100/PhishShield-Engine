@@ -12,6 +12,7 @@ Usage:
     from src.utils.secrets import vault
     jwt_secret = vault.get("JWT_SECRET")
 """
+
 import os
 import json
 from src.utils.logger import logger
@@ -34,7 +35,9 @@ class SecretsVault:
                     self.keys.update(json.load(f))
                 logger.debug("Loaded secrets from '%s'.", self.file_path)
             except Exception as exc:
-                logger.warning("Could not read secrets file '%s': %s", self.file_path, exc)
+                logger.warning(
+                    "Could not read secrets file '%s': %s", self.file_path, exc
+                )
 
         # 2. Environment variables always win — overlay ALL keys that appear in the JSON,
         #    plus the core required keys. This ensures any new key added to secrets.json
@@ -71,7 +74,7 @@ class SecretsVault:
                 raise RuntimeError(
                     "FATAL: JWT_SECRET is not set or is using the development placeholder. "
                     "Generate a strong secret with: "
-                    "python -c \"import secrets; print(secrets.token_hex(32))\""
+                    'python -c "import secrets; print(secrets.token_hex(32))"'
                 )
         elif not secret:
             # Dev mode: warn loudly and fall back to the placeholder

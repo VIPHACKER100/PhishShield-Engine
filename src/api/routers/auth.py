@@ -49,10 +49,17 @@ async def register(request: Request, body: RegisterRequest):
     client_ip = get_remote_address(request)
     try:
         result = register_user(body.username, body.password, body.email)
-        log_security_event("USER_REGISTERED", client_ip=client_ip, username=body.username)
+        log_security_event(
+            "USER_REGISTERED", client_ip=client_ip, username=body.username
+        )
         return result
     except ValueError as e:
-        log_security_event("REGISTER_FAILED", client_ip=client_ip, username=body.username, detail=str(e))
+        log_security_event(
+            "REGISTER_FAILED",
+            client_ip=client_ip,
+            username=body.username,
+            detail=str(e),
+        )
         raise HTTPException(status_code=409, detail=str(e))
 
 
@@ -68,7 +75,12 @@ async def login(request: Request, body: LoginRequest):
     client_ip = get_remote_address(request)
     result = authenticate_user(body.username, body.password, client_ip=client_ip)
     if result is None:
-        log_security_event("AUTH_FAILURE", client_ip=client_ip, username=body.username, detail="Invalid credentials or locked account")
+        log_security_event(
+            "AUTH_FAILURE",
+            client_ip=client_ip,
+            username=body.username,
+            detail="Invalid credentials or locked account",
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     log_security_event("AUTH_SUCCESS", client_ip=client_ip, username=body.username)
     return result
@@ -88,7 +100,9 @@ async def password_reset_request(request: Request, body: PasswordResetRequestSch
     """
     client_ip = get_remote_address(request)
     raw_token = request_password_reset(body.username)
-    log_security_event("PASSWORD_RESET_REQUESTED", client_ip=client_ip, username=body.username)
+    log_security_event(
+        "PASSWORD_RESET_REQUESTED", client_ip=client_ip, username=body.username
+    )
     # Return a uniform response body to prevent user enumeration.
     # In production: send raw_token via email and do NOT include it in the response.
     return {
@@ -111,14 +125,26 @@ async def password_reset(request: Request, body: PasswordResetSchema):
     try:
         ok = reset_password(body.username, body.token, body.new_password)
     except ValueError as e:
-        log_security_event("PASSWORD_RESET_FAILED", client_ip=client_ip, username=body.username, detail=str(e))
+        log_security_event(
+            "PASSWORD_RESET_FAILED",
+            client_ip=client_ip,
+            username=body.username,
+            detail=str(e),
+        )
         raise HTTPException(status_code=422, detail=str(e))
 
     if not ok:
-        log_security_event("PASSWORD_RESET_FAILED", client_ip=client_ip, username=body.username, detail="Invalid or expired token")
+        log_security_event(
+            "PASSWORD_RESET_FAILED",
+            client_ip=client_ip,
+            username=body.username,
+            detail="Invalid or expired token",
+        )
         raise HTTPException(status_code=400, detail="Invalid or expired reset token.")
 
-    log_security_event("PASSWORD_RESET_SUCCESS", client_ip=client_ip, username=body.username)
+    log_security_event(
+        "PASSWORD_RESET_SUCCESS", client_ip=client_ip, username=body.username
+    )
     return {"detail": "Password updated successfully."}
 
 
@@ -135,7 +161,9 @@ async def get_my_profile(current_user: User = Depends(get_current_user)):
         "username": current_user.username,
         "email": current_user.email,
         "is_email_verified": current_user.is_email_verified,
-        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "created_at": (
+            current_user.created_at.isoformat() if current_user.created_at else None
+        ),
     }
 
 
@@ -153,29 +181,39 @@ async def get_my_log_by_id(log_id: int, current_user: User = Depends(get_current
     """
     log = get_user_log_by_id(log_id, current_user.id)
     if not log:
-        raise HTTPException(status_code=404, detail="Log entry not found or access denied")
+        raise HTTPException(
+            status_code=404, detail="Log entry not found or access denied"
+        )
     return log
 
 
 @router.get("/feedback/{feedback_id}")
-async def get_my_feedback_by_id(feedback_id: int, current_user: User = Depends(get_current_user)):
+async def get_my_feedback_by_id(
+    feedback_id: int, current_user: User = Depends(get_current_user)
+):
     """
     Retrieve a specific feedback entry by feedback_id.
     Prevents IDOR by verifying ownership: feedback.user_id == current_user.id.
     """
     fb = get_user_feedback_by_id(feedback_id, current_user.id)
     if not fb:
-        raise HTTPException(status_code=404, detail="Feedback entry not found or access denied")
+        raise HTTPException(
+            status_code=404, detail="Feedback entry not found or access denied"
+        )
     return fb
 
 
 @router.delete("/feedback/{feedback_id}")
-async def delete_my_feedback(feedback_id: int, current_user: User = Depends(get_current_user)):
+async def delete_my_feedback(
+    feedback_id: int, current_user: User = Depends(get_current_user)
+):
     """
     Delete a specific feedback entry by feedback_id.
     Prevents IDOR by verifying ownership: feedback.user_id == current_user.id.
     """
     deleted = delete_user_feedback(feedback_id, current_user.id)
     if not deleted:
-        raise HTTPException(status_code=404, detail="Feedback entry not found or access denied")
+        raise HTTPException(
+            status_code=404, detail="Feedback entry not found or access denied"
+        )
     return {"detail": "Feedback entry deleted successfully."}

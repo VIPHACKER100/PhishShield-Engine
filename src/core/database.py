@@ -1,5 +1,14 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, ForeignKey, DateTime
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Text,
+    Boolean,
+    ForeignKey,
+    DateTime,
+)
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime, timezone
 
@@ -15,6 +24,7 @@ engine = create_engine(DB_URL, connect_args=_connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "users"
@@ -41,6 +51,7 @@ class User(Base):
 
     logs = relationship("UsageLog", back_populates="user")
 
+
 class UsageLog(Base):
     __tablename__ = "usage_logs"
 
@@ -52,6 +63,7 @@ class UsageLog(Base):
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="logs")
+
 
 class Feedback(Base):
     __tablename__ = "feedback"
@@ -66,8 +78,10 @@ class Feedback(Base):
 
     user = relationship("User")
 
+
 def init_db():
     Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()
