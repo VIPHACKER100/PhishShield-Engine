@@ -17,16 +17,12 @@ def init_threat_db():
     c = conn.cursor()
 
     # Table for malicious domains
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS bad_domains
-                 (domain TEXT PRIMARY KEY, reason TEXT, added_at DATETIME)"""
-    )
+    c.execute("""CREATE TABLE IF NOT EXISTS bad_domains
+                 (domain TEXT PRIMARY KEY, reason TEXT, added_at DATETIME)""")
 
     # Table for known phishing patterns (regex/keywords)
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS bad_patterns
-                 (pattern TEXT PRIMARY KEY, type TEXT, added_at DATETIME)"""
-    )
+    c.execute("""CREATE TABLE IF NOT EXISTS bad_patterns
+                 (pattern TEXT PRIMARY KEY, type TEXT, added_at DATETIME)""")
 
     # Seed with some defaults
     defaults = [

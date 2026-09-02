@@ -7,7 +7,6 @@ import random
 import pandas as pd
 from src.utils.logger import logger
 
-
 # ---------------------------------------------------------------------------
 # Synthetic data templates
 # ---------------------------------------------------------------------------
