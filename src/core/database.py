@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime, timezone
 
@@ -24,6 +24,20 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     api_key = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # --- Security fields ---
+    # Optional email address (for password reset / future email verification)
+    email = Column(String, unique=True, index=True, nullable=True)
+    # Whether the user's email has been verified (feature-flagged; not enforced at login by default)
+    is_email_verified = Column(Boolean, default=False, nullable=False)
+    # Consecutive failed login counter; reset to 0 on successful authentication
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    # When set, the account is locked until this UTC timestamp
+    locked_until = Column(DateTime, nullable=True)
+    # SHA-256 hash of a one-time password-reset token (never store the raw token)
+    password_reset_token_hash = Column(String, nullable=True)
+    # When the password-reset token expires (UTC)
+    password_reset_expires = Column(DateTime, nullable=True)
 
     logs = relationship("UsageLog", back_populates="user")
 

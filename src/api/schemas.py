@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 MAX_TEXT_LENGTH = 50_000
 
@@ -15,21 +15,34 @@ class PredictRequest(BaseModel):
 
 class BatchPredictRequest(BaseModel):
     model_config = {"protected_namespaces": ()}
-    
+
     emails: list[str] = Field(..., min_length=1, max_length=100)
     model_name: Optional[str] = None
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=6, max_length=128)
+    # Minimum 8 chars enforced; further complexity is checked in auth.register_user()
+    password: str = Field(..., min_length=8, max_length=128)
+    # Optional email — required for password reset flows
+    email: Optional[EmailStr] = None
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=1, max_length=128)
+
+class PasswordResetRequestSchema(BaseModel):
+    """Request a password-reset token to be sent out-of-band (e.g. email)."""
+    username: str = Field(..., min_length=1, max_length=50)
+
+class PasswordResetSchema(BaseModel):
+    """Consume a password-reset token and set a new password."""
+    username: str = Field(..., min_length=1, max_length=50)
+    token: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
 
 class FeedbackRequest(BaseModel):
     model_config = {"protected_namespaces": ()}
-    
+
     email_text: str = Field(..., min_length=1)
     predicted_label: str
     correct_label: str
