@@ -47,7 +47,9 @@ python cli/manage.py block <domain>
 
 **Options:**
 
-- `--reason "<Text>"`: Attach a manual string specifying why this string is blocked.
+- `--reason "<Text>"`: Attach a manual string specifying why this domain is blocked.
+
+> 🔒 **Input Validation**: `manage.py block` enforces strict domain syntax validation (`validate_domain()`). Invalid FQDN strings (containing spaces, quotes, or malformed characters) are rejected before database insertion. Reason strings are sanitized against control character injection.
 
 *Example:* `python cli/manage.py block attacker-crypto.com --reason "Bitcoin scam campaign"`
 

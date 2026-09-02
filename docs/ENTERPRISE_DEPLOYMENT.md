@@ -59,6 +59,9 @@ In addition to standard operational logs (`logs/app.log`), PhishShield writes st
 - `ACCOUNT_LOCKED`: Account locked due to exceeding max failure threshold.
 - `PASSWORD_RESET_REQUESTED` & `PASSWORD_RESET_SUCCESS`: Password reset activity.
 - `RATE_LIMIT_EXCEEDED`: Client exceeded endpoint rate limit threshold.
+- `BOT_ATTACK_BLOCKED`: Request from blacklisted vulnerability scanner User-Agent.
+- `BOT_BLOCKED_EMPTY_UA`: Request to API endpoint without User-Agent header.
+- `BOT_HONEYPOT_TRIGGERED`: Request containing honeypot header (`X-Honeypot-Trap`).
 - `CLIENT_ERROR` & `SERVER_ERROR`: 4xx / 5xx HTTP response anomalies.
 - `SYSTEM_STARTUP`: Server lifecycle events.
 

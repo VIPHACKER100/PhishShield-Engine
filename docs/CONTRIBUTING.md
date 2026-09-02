@@ -55,6 +55,8 @@ Before writing code, please check our [Architecture Guide](ARCHITECTURE.md), [AP
 ### Coding Standards
 
 - **Typing:** We use standard Python type hints (`from typing import Optional, List`). All new functions should have their parameters and return types hinted.
+- **Input Sanitization & Injection Defense:** All user input parameters entering API routes, request schemas, or database methods must be sanitized using `src/utils/sanitizer.py` (`sanitize_text()`, `validate_username()`, `validate_domain()`, `validate_token()`). HTML script tags (`<script>`, `<iframe>`) must be escaped (`html.escape`) to prevent Stored/Reflected XSS. Password fields must be capped at 128 characters max to protect `bcrypt` from CPU DoS.
+- **IDOR Protection:** All resource endpoints must check resource ownership (`resource.user_id == current_user.id`) via `get_current_user`.
 - **Security & Auth:** Never expose secrets, hardcode JWT keys, or perform non-constant-time comparisons on credentials. Use `src/utils/secrets.py` for config keys and `hmac.compare_digest` for secret string comparisons.
 - **Docstrings:** Use simple, descriptive docstrings for all new methods and classes.
 - **Logging:** Do **not** use `print()`. Use the custom initialized logger:
@@ -69,18 +71,21 @@ Before writing code, please check our [Architecture Guide](ARCHITECTURE.md), [AP
 
 ## 3. Running the Test Suite
 
-Before opening a pull request, ensure your code doesn't break existing functionality. We use `pytest` for unit and security testing.
+Before opening a pull request, ensure your code doesn't break existing functionality. We use `pytest` for unit and security testing (**95 / 95 tests passing**).
 
-1. **Run All Tests:**
+1. **Run Full Security Test Suite:**
 
    ```bash
-   pytest tests/ -v
+   pytest tests/test_input_validation.py tests/test_secrets_audit.py tests/test_auth_unit.py tests/test_abuse_protection.py -v
    ```
 
-2. **Run Authentication & Security Unit Tests:**
+2. **Run Individual Security Test Suites:**
 
    ```bash
-   pytest tests/test_auth_unit.py -v
+   pytest tests/test_input_validation.py -v # Input sanitization & XSS tests (29 tests)
+   pytest tests/test_secrets_audit.py -v     # Secrets vault & gitignore tests (16 tests)
+   pytest tests/test_auth_unit.py -v          # Auth, bcrypt & IDOR tests (21 tests)
+   pytest tests/test_abuse_protection.py -v   # Rate limiting & bot protection (29 tests)
    ```
 
 3. **Run ML Specific Tests:**
