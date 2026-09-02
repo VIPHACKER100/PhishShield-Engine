@@ -5,6 +5,7 @@ Header Analyzer — Detect email spoofing and header anomalies.
 import re
 from src.utils.logger import logger
 
+
 def parse_headers(raw_headers: str) -> dict:
     """
     Very basic parser for email header strings.
@@ -13,10 +14,11 @@ def parse_headers(raw_headers: str) -> dict:
     headers = {}
     lines = raw_headers.splitlines()
     for line in lines:
-        if ':' in line:
-            key, val = line.split(':', 1)
+        if ":" in line:
+            key, val = line.split(":", 1)
             headers[key.strip().lower()] = val.strip()
     return headers
+
 
 def analyze_headers(headers: dict) -> dict:
     """
@@ -30,18 +32,18 @@ def analyze_headers(headers: dict) -> dict:
         "mismatched_domains": False,
         "suspicious_relay": False,
         "missing_security": False,
-        "threats": []
+        "threats": [],
     }
 
-    from_field = headers.get('from', '')
-    return_path = headers.get('return-path', '')
-    reply_to = headers.get('reply-to', '')
-    
+    from_field = headers.get("from", "")
+    return_path = headers.get("return-path", "")
+    reply_to = headers.get("reply-to", "")
+
     # 1. From vs Return-Path check
     if from_field and return_path:
-        from_domain = re.search(r'@([\w.-]+)', from_field)
-        rp_domain = re.search(r'@([\w.-]+)', return_path)
-        
+        from_domain = re.search(r"@([\w.-]+)", from_field)
+        rp_domain = re.search(r"@([\w.-]+)", return_path)
+
         if from_domain and rp_domain and from_domain.group(1) != rp_domain.group(1):
             results["is_spoofed"] = True
             results["mismatched_domains"] = True
@@ -53,12 +55,12 @@ def analyze_headers(headers: dict) -> dict:
             results["threats"].append("Reply-To differs from From address")
 
     # 3. Check for auth results (simulated)
-    auth_res = headers.get('authentication-results', '')
+    auth_res = headers.get("authentication-results", "")
     if auth_res:
-        if 'spf=fail' in auth_res.lower() or 'spf=softfail' in auth_res.lower():
+        if "spf=fail" in auth_res.lower() or "spf=softfail" in auth_res.lower():
             results["is_spoofed"] = True
             results["threats"].append("SPF authentication failed")
-        if 'dkim=fail' in auth_res.lower():
+        if "dkim=fail" in auth_res.lower():
             results["is_spoofed"] = True
             results["threats"].append("DKIM authentication failed")
 

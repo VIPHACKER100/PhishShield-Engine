@@ -31,6 +31,7 @@ from src.utils.logger import logger
 # ---------------------------------------------------------------------------
 try:
     from lightgbm import LGBMClassifier
+
     _LGBM_AVAILABLE = True
 except ImportError:
     _LGBM_AVAILABLE = False
@@ -45,26 +46,45 @@ def _base_estimators() -> list[tuple[str, object]]:
         # HistGB works on dense arrays; we wrap it so sparse input is handled
         (
             "hgb",
-            Pipeline([
-                ("scaler", MaxAbsScaler()),
-                ("dense", DenseTransformer()),
-                ("clf", HistGradientBoostingClassifier(
-                    max_iter=200, learning_rate=0.1, max_leaf_nodes=63, random_state=42
-                )),
-            ]),
+            Pipeline(
+                [
+                    ("scaler", MaxAbsScaler()),
+                    ("dense", DenseTransformer()),
+                    (
+                        "clf",
+                        HistGradientBoostingClassifier(
+                            max_iter=200,
+                            learning_rate=0.1,
+                            max_leaf_nodes=63,
+                            random_state=42,
+                        ),
+                    ),
+                ]
+            ),
         ),
     ]
     if _LGBM_AVAILABLE:
-        estimators.append((
-            "lgbm",
-            Pipeline([
-                ("scaler", MaxAbsScaler()),
-                ("clf", LGBMClassifier(
-                    n_estimators=300, learning_rate=0.05,
-                    num_leaves=63, n_jobs=-1, random_state=42, verbosity=-1,
-                )),
-            ])
-        ))
+        estimators.append(
+            (
+                "lgbm",
+                Pipeline(
+                    [
+                        ("scaler", MaxAbsScaler()),
+                        (
+                            "clf",
+                            LGBMClassifier(
+                                n_estimators=300,
+                                learning_rate=0.05,
+                                num_leaves=63,
+                                n_jobs=-1,
+                                random_state=42,
+                                verbosity=-1,
+                            ),
+                        ),
+                    ]
+                ),
+            )
+        )
     return estimators
 
 
@@ -99,7 +119,7 @@ def train_ensemble(
     X_train,
     y_train,
     model_dir: str = "models",
-    kind: str = "voting",   # "voting" | "stacking"
+    kind: str = "voting",  # "voting" | "stacking"
 ) -> object:
     """
     Train and save an ensemble model.

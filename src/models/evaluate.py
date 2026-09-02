@@ -24,20 +24,31 @@ def evaluate_model(model, X_test, y_test, model_name: str) -> dict:
     metrics = {
         "model": model_name,
         "accuracy": round(accuracy_score(y_test, y_pred), 4),
-        "precision": round(precision_score(y_test, y_pred, pos_label="spam", zero_division=0), 4),
-        "recall": round(recall_score(y_test, y_pred, pos_label="spam", zero_division=0), 4),
-        "f1_score": round(f1_score(y_test, y_pred, pos_label="spam", zero_division=0), 4),
+        "precision": round(
+            precision_score(y_test, y_pred, pos_label="spam", zero_division=0), 4
+        ),
+        "recall": round(
+            recall_score(y_test, y_pred, pos_label="spam", zero_division=0), 4
+        ),
+        "f1_score": round(
+            f1_score(y_test, y_pred, pos_label="spam", zero_division=0), 4
+        ),
         "confusion_matrix": cm,
     }
     logger.info(
         "%s → acc=%.4f  prec=%.4f  rec=%.4f  f1=%.4f",
-        model_name, metrics["accuracy"], metrics["precision"],
-        metrics["recall"], metrics["f1_score"],
+        model_name,
+        metrics["accuracy"],
+        metrics["precision"],
+        metrics["recall"],
+        metrics["f1_score"],
     )
     return metrics
 
 
-def evaluate_all(models: dict, X_test, y_test, output_path: str = "models/metrics.json") -> dict:
+def evaluate_all(
+    models: dict, X_test, y_test, output_path: str = "models/metrics.json"
+) -> dict:
     """
     Evaluate all models and save results.
 
@@ -60,6 +71,10 @@ def evaluate_all(models: dict, X_test, y_test, output_path: str = "models/metric
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(report, f, indent=2)
-    logger.info("Best model: %s (F1=%.4f). Metrics saved → %s",
-                best["model"], best["f1_score"], output_path)
+    logger.info(
+        "Best model: %s (F1=%.4f). Metrics saved → %s",
+        best["model"],
+        best["f1_score"],
+        output_path,
+    )
     return report

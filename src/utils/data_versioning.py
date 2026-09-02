@@ -79,7 +79,12 @@ def register_version(
     }
     entries.append(entry)
     _save_metadata(entries)
-    logger.info("Registered dataset version %s (%d samples) → %s", version_tag, len(df), dest_path)
+    logger.info(
+        "Registered dataset version %s (%d samples) → %s",
+        version_tag,
+        len(df),
+        dest_path,
+    )
     return entry
 
 

@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # SecretsVault — env var override behaviour
 # ---------------------------------------------------------------------------
 
+
 class TestSecretsVaultEnvPriority:
     """Environment variables must always win over values from secrets.json."""
 
@@ -32,6 +33,7 @@ class TestSecretsVaultEnvPriority:
         os.environ["JWT_SECRET"] = "env-value"
         try:
             from src.utils.secrets import SecretsVault
+
             vault = SecretsVault(secrets_file=str(secrets_file))
             assert vault.get("JWT_SECRET") == "env-value"
         finally:
@@ -45,6 +47,7 @@ class TestSecretsVaultEnvPriority:
         os.environ.pop("JWT_SECRET", None)
         try:
             from src.utils.secrets import SecretsVault
+
             vault = SecretsVault(secrets_file=str(secrets_file))
             assert vault.get("JWT_SECRET") == "from-json-secret"
         finally:
@@ -53,15 +56,20 @@ class TestSecretsVaultEnvPriority:
     def test_new_key_in_json_overridden_by_env(self, tmp_path):
         """Any key found in JSON (not just the 4 hardcoded ones) must be env-overrideable."""
         secrets_file = tmp_path / "secrets.json"
-        secrets_file.write_text(json.dumps({
-            "JWT_SECRET": "json-jwt",
-            "SMTP_PASSWORD": "json-smtp-pass",
-        }))
+        secrets_file.write_text(
+            json.dumps(
+                {
+                    "JWT_SECRET": "json-jwt",
+                    "SMTP_PASSWORD": "json-smtp-pass",
+                }
+            )
+        )
 
         os.environ["JWT_SECRET"] = "env-jwt"
         os.environ["SMTP_PASSWORD"] = "env-smtp-pass"
         try:
             from src.utils.secrets import SecretsVault
+
             vault = SecretsVault(secrets_file=str(secrets_file))
             assert vault.get("JWT_SECRET") == "env-jwt"
             assert vault.get("SMTP_PASSWORD") == "env-smtp-pass"
@@ -74,6 +82,7 @@ class TestSecretsVaultEnvPriority:
         os.environ["JWT_SECRET"] = "env-only-value"
         try:
             from src.utils.secrets import SecretsVault
+
             vault = SecretsVault(secrets_file=str(tmp_path / "nonexistent.json"))
             assert vault.get("JWT_SECRET") == "env-only-value"
         finally:
@@ -88,6 +97,7 @@ class TestSecretsVaultEnvPriority:
         os.environ["APP_SECRET_KEY"] = "alias-secret"
         try:
             from src.utils.secrets import SecretsVault
+
             vault = SecretsVault(secrets_file=str(secrets_file))
             assert vault.get("JWT_SECRET") == "alias-secret"
         finally:
@@ -99,6 +109,7 @@ class TestSecretsVaultEnvPriority:
 # SecretsVault — production startup guard
 # ---------------------------------------------------------------------------
 
+
 class TestSecretsVaultProductionGuard:
     """In ENV=prod, startup must be blocked for missing or placeholder JWT_SECRET."""
 
@@ -107,11 +118,13 @@ class TestSecretsVaultProductionGuard:
     def _make_vault(self, jwt_secret, tmp_path, env="prod"):
         """Helper: create a SecretsVault directly with controlled env state."""
         from src.utils.secrets import SecretsVault
+
         secrets_file = tmp_path / "secrets.json"
         secrets_file.write_text(json.dumps({}))
 
         # Patch the module-level _ENV used inside _validate
         import src.utils.secrets as sm
+
         original_env = sm._ENV
         sm._ENV = env
         if jwt_secret:
@@ -145,6 +158,7 @@ class TestSecretsVaultProductionGuard:
 # .gitignore coverage
 # ---------------------------------------------------------------------------
 
+
 class TestGitignoreCoverage:
     """Critical secret file patterns must be listed in .gitignore."""
 
@@ -175,6 +189,7 @@ class TestGitignoreCoverage:
 # Kafka consumer reads from env
 # ---------------------------------------------------------------------------
 
+
 class TestKafkaConsumerEnvConfig:
     """EmailStreamConsumer must read broker URL and topic from environment."""
 
@@ -182,6 +197,7 @@ class TestKafkaConsumerEnvConfig:
         """Instantiate a minimal consumer-like object using only the env logic,
         without importing the full consumer module (avoids transformers dep)."""
         import os
+
         _DEFAULT_BROKER = "localhost:9092"
         _DEFAULT_TOPIC = "email_ingest"
 
@@ -193,7 +209,9 @@ class TestKafkaConsumerEnvConfig:
             else:
                 os.environ[key] = val
         try:
-            resolved_broker = broker_url or os.environ.get("KAFKA_BROKER_URL", _DEFAULT_BROKER)
+            resolved_broker = broker_url or os.environ.get(
+                "KAFKA_BROKER_URL", _DEFAULT_BROKER
+            )
             resolved_topic = topic or os.environ.get("KAFKA_TOPIC", _DEFAULT_TOPIC)
         finally:
             for key, original in saved.items():
@@ -205,7 +223,10 @@ class TestKafkaConsumerEnvConfig:
 
     def test_broker_url_from_env(self):
         broker, topic = self._build_consumer(
-            env_vars={"KAFKA_BROKER_URL": "kafka.prod.example.com:9093", "KAFKA_TOPIC": "prod_email_ingest"}
+            env_vars={
+                "KAFKA_BROKER_URL": "kafka.prod.example.com:9093",
+                "KAFKA_TOPIC": "prod_email_ingest",
+            }
         )
         assert broker == "kafka.prod.example.com:9093"
         assert topic == "prod_email_ingest"
@@ -221,7 +242,7 @@ class TestKafkaConsumerEnvConfig:
         broker, topic = self._build_consumer(
             broker_url="explicit:9093",
             topic="explicit_topic",
-            env_vars={"KAFKA_BROKER_URL": "from-env:9092"}
+            env_vars={"KAFKA_BROKER_URL": "from-env:9092"},
         )
         assert broker == "explicit:9093"
         assert topic == "explicit_topic"

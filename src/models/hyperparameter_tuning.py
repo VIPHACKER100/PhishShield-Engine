@@ -77,6 +77,7 @@ _NEEDS_DENSE: set[str] = {"random_forest", "gradient_boosting"}
 def _to_dense_if_needed(X, model_name: str):
     if model_name in _NEEDS_DENSE:
         import scipy.sparse as sp
+
         if sp.issparse(X):
             return X.toarray()
     return X
@@ -117,7 +118,9 @@ def tune_model(
     rs.fit(X, y_train)
     logger.info(
         "Tuned %s → best_score=%.4f  params=%s",
-        model_name, rs.best_score_, rs.best_params_,
+        model_name,
+        rs.best_score_,
+        rs.best_params_,
     )
     return {
         "best_params": rs.best_params_,

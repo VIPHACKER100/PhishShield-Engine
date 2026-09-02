@@ -7,24 +7,25 @@ import re
 from src.utils.logger import logger
 
 # Zero-width spaces, joiners, and other invisible markers
-INVISIBLE_CHARS_PATTERN = r'[\u200B-\u200D\uFEFF\u00AD\u2060]'
+INVISIBLE_CHARS_PATTERN = r"[\u200B-\u200D\uFEFF\u00AD\u2060]"
+
 
 def detect_obfuscation(text: str) -> dict:
     """Detect hidden/invisible characters used to bypass spam filters."""
     matches = re.findall(INVISIBLE_CHARS_PATTERN, text)
     count = len(matches)
-    
+
     # Check for excessive character repetition (another evasion trick)
     repetition = False
-    if re.search(r'(.)\1{10,}', text):
+    if re.search(r"(.)\1{10,}", text):
         repetition = True
-        
+
     # Check for excessive punctuation / symbol ratio
-    symbols = len(re.findall(r'[^\w\s]', text))
+    symbols = len(re.findall(r"[^\w\s]", text))
     symbol_ratio = symbols / len(text) if len(text) > 0 else 0
-    
+
     is_obfuscated = count > 0 or repetition or symbol_ratio > 0.4
-    
+
     threats = []
     if count > 0:
         threats.append(f"Detected {count} zero-width / invisible characters")
@@ -37,9 +38,10 @@ def detect_obfuscation(text: str) -> dict:
         "is_obfuscated": is_obfuscated,
         "invisible_count": count,
         "symbol_ratio": symbol_ratio,
-        "threats": threats
+        "threats": threats,
     }
 
+
 if __name__ == "__main__":
-    test_text = "Free G\u200Bift Ca\u200Brd"
+    test_text = "Free G\u200bift Ca\u200brd"
     print(detect_obfuscation(test_text))

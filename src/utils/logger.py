@@ -15,7 +15,9 @@ LOG_FILE = os.path.join(LOG_DIR, "app.log")
 SECURITY_LOG_FILE = os.path.join(LOG_DIR, "security_audit.log")
 
 
-def setup_logger(name: str = "email_classifier", level: int = logging.INFO) -> logging.Logger:
+def setup_logger(
+    name: str = "email_classifier", level: int = logging.INFO
+) -> logging.Logger:
     """Configure and return a logger with rotating file handler and console output."""
     os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -32,12 +34,16 @@ def setup_logger(name: str = "email_classifier", level: int = logging.INFO) -> l
     )
 
     # Rotating file handler (5 MB, keep 5 backups)
-    file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5_000_000, backupCount=5, encoding="utf-8")
+    file_handler = RotatingFileHandler(
+        LOG_FILE, maxBytes=5_000_000, backupCount=5, encoding="utf-8"
+    )
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
 
     # Console handler — use UTF-8 to avoid Windows cp1252 encoding errors
-    stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    stream = io.TextIOWrapper(
+        sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True
+    )
     console_handler = logging.StreamHandler(stream)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
@@ -48,7 +54,9 @@ def setup_logger(name: str = "email_classifier", level: int = logging.INFO) -> l
     return logger_inst
 
 
-def setup_security_logger(name: str = "security_audit", level: int = logging.INFO) -> logging.Logger:
+def setup_security_logger(
+    name: str = "security_audit", level: int = logging.INFO
+) -> logging.Logger:
     """Configure and return dedicated security audit logger writing to logs/security_audit.log."""
     os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -64,12 +72,16 @@ def setup_security_logger(name: str = "security_audit", level: int = logging.INF
     )
 
     # Rotating file handler (10 MB, keep 10 backups)
-    file_handler = RotatingFileHandler(SECURITY_LOG_FILE, maxBytes=10_000_000, backupCount=10, encoding="utf-8")
+    file_handler = RotatingFileHandler(
+        SECURITY_LOG_FILE, maxBytes=10_000_000, backupCount=10, encoding="utf-8"
+    )
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
 
     # Console handler
-    stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    stream = io.TextIOWrapper(
+        sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True
+    )
     console_handler = logging.StreamHandler(stream)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
@@ -85,11 +97,12 @@ def generate_request_id() -> str:
     return str(uuid.uuid4())[:8]
 
 
-def log_security_event(event_type: str, client_ip: str, username: str = "anonymous", detail: str = ""):
+def log_security_event(
+    event_type: str, client_ip: str, username: str = "anonymous", detail: str = ""
+):
     """Convenience helper to record structured security audit events."""
     security_logger.info(
-        "EVENT=%s IP=%s USER=%s DETAIL=%s",
-        event_type, client_ip, username, detail
+        "EVENT=%s IP=%s USER=%s DETAIL=%s", event_type, client_ip, username, detail
     )
 
 

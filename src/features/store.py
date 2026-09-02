@@ -26,7 +26,9 @@ def _save_meta(meta: dict):
         json.dump(meta, f, indent=2)
 
 
-def save_features(X, name: str, dataset_version: str = "unknown", method: str = "tfidf") -> str:
+def save_features(
+    X, name: str, dataset_version: str = "unknown", method: str = "tfidf"
+) -> str:
     """
     Persist a feature matrix and record metadata.
 
@@ -66,7 +68,9 @@ def load_features(name: str):
     """Load a previously saved feature matrix."""
     meta = _load_meta()
     if name not in meta:
-        raise KeyError(f"Feature set '{name}' not found in store. Available: {list(meta.keys())}")
+        raise KeyError(
+            f"Feature set '{name}' not found in store. Available: {list(meta.keys())}"
+        )
     path = meta[name]["path"]
     X = joblib.load(path)
     logger.info("Loaded feature set '%s' from %s", name, path)

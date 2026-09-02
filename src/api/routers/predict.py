@@ -25,6 +25,7 @@ _limiter = Limiter(key_func=get_remote_address)
 
 _arq_pool = None
 
+
 async def _get_arq_pool():
     """Lazily create and cache the ARQ Redis connection pool."""
     global _arq_pool
@@ -33,13 +34,17 @@ async def _get_arq_pool():
         try:
             _arq_pool = await create_pool(RedisSettings(host=redis_host, port=6379))
         except Exception as e:
-            logger.warning("ARQ pool unavailable (Redis not running?): %s. Falling back to sync.", e)
+            logger.warning(
+                "ARQ pool unavailable (Redis not running?): %s. Falling back to sync.",
+                e,
+            )
     return _arq_pool
 
 
 # ---------------------------------------------------------------------------
 # Endpoints (with per-IP Rate Limiting & Anti-Abuse Controls)
 # ---------------------------------------------------------------------------
+
 
 @router.post("/predict")
 @_limiter.limit("15/minute")
@@ -50,18 +55,21 @@ async def predict(request: Request, body: PredictRequest):
             model_name = ab_test.select()
 
         result = predict_email(body.text, model_name, body.headers or "")
-        logger.info("Email prediction: %s", result['prediction'])
+        logger.info("Email prediction: %s", result["prediction"])
 
         # Enqueue background tasks via ARQ (falls back to sync if Redis unavailable)
         pool = await _get_arq_pool()
         if pool:
-            await pool.enqueue_job("check_drift", body.text, result['prediction'])
+            await pool.enqueue_job("check_drift", body.text, result["prediction"])
             if result.get("security_risk_score", 0) >= 75:
-                await pool.enqueue_job("send_security_alert", "Phishing Detection", result)
+                await pool.enqueue_job(
+                    "send_security_alert", "Phishing Detection", result
+                )
         else:
             # Sync fallback when Redis is not available (e.g., local dev)
             from src.models.drift_monitor import DriftMonitor
-            DriftMonitor().check([body.text], [result['prediction']])
+
+            DriftMonitor().check([body.text], [result["prediction"]])
 
         return result
     except Exception as e:
@@ -73,6 +81,7 @@ async def predict(request: Request, body: PredictRequest):
 @_limiter.limit("15/minute")
 async def analyze_security_endpoint(request: Request, body: PredictRequest):
     from src.security.risk_scoring import calculate_security_risk
+
     try:
         analysis = calculate_security_risk(body.text, body.headers or "")
         return analysis
@@ -83,7 +92,11 @@ async def analyze_security_endpoint(request: Request, body: PredictRequest):
 
 @router.post("/predict/batch")
 @_limiter.limit("5/minute")
-async def predict_batch_endpoint(request: Request, body: BatchPredictRequest, user: Optional[User] = Depends(optional_auth)):
+async def predict_batch_endpoint(
+    request: Request,
+    body: BatchPredictRequest,
+    user: Optional[User] = Depends(optional_auth),
+):
     try:
         results = predict_batch(body.emails, body.model_name)
         return {"results": results, "count": len(results)}
@@ -99,13 +112,14 @@ async def predict_batch_endpoint(request: Request, body: BatchPredictRequest, us
 async def export_report_endpoint(request: Request, body: PredictRequest):
     from src.security.risk_scoring import calculate_security_risk
     from src.security.url_extractor import extract_urls
+
     try:
         analysis = calculate_security_risk(body.text, body.headers or "")
         report = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "original_email": body.text,
             "extracted_urls": extract_urls(body.text),
-            "forensic_analysis": analysis
+            "forensic_analysis": analysis,
         }
         return JSONResponse(content=report)
     except Exception as e:
@@ -115,7 +129,11 @@ async def export_report_endpoint(request: Request, body: PredictRequest):
 
 @router.post("/feedback")
 @_limiter.limit("10/minute")
-async def submit_feedback(request: Request, body: FeedbackRequest, user: Optional[User] = Depends(optional_auth)):
+async def submit_feedback(
+    request: Request,
+    body: FeedbackRequest,
+    user: Optional[User] = Depends(optional_auth),
+):
     clean_text = anonymize_text(body.email_text)
     user_id = user.id if user else None
     entry = save_feedback(

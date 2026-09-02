@@ -8,7 +8,9 @@ import random
 from datetime import datetime, timezone
 from src.utils.logger import logger
 
-AB_LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "ab_test_results.json")
+AB_LOG_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "..", "logs", "ab_test_results.json"
+)
 
 
 class ABTest:
@@ -32,7 +34,9 @@ class ABTest:
         """Randomly select a model based on the traffic split."""
         return self.model_a if random.random() < self.split else self.model_b
 
-    def record(self, model_used: str, prediction: str, correct_label: str | None = None):
+    def record(
+        self, model_used: str, prediction: str, correct_label: str | None = None
+    ):
         """Record an A/B test outcome."""
         entry = {
             "model": model_used,

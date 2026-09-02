@@ -6,7 +6,10 @@ import os
 import yaml
 from typing import Any
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "config", "config.yaml")
+CONFIG_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "..", "config", "config.yaml"
+)
+
 
 class Config:
     _instance = None
@@ -26,17 +29,18 @@ class Config:
             # Fallback defaults if file missing
             self._values = {
                 "security": {"thresholds": {"high_risk": 75, "suspicious": 30}},
-                "api": {"port": 8000}
+                "api": {"port": 8000},
             }
 
     def get(self, key_path: str, default: Any = None) -> Any:
         try:
             val = self._values
-            for part in key_path.split('.'):
+            for part in key_path.split("."):
                 val = val[part]
             return val
         except (KeyError, TypeError):
             return default
+
 
 # Global settings instance
 settings = Config()

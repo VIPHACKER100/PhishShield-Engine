@@ -3,8 +3,10 @@ from typing import Optional
 from src.api.auth import verify_token, verify_api_key, get_user_by_username
 from src.core.database import User
 from src.models.ab_testing import ABTest
+
 # Global instances
 ab_test = ABTest("naive_bayes", "svm", split=0.5)
+
 
 async def optional_auth(request: Request) -> Optional[User]:
     """
@@ -27,7 +29,10 @@ async def optional_auth(request: Request) -> Optional[User]:
 
     return None
 
-async def get_current_user(request: Request, user: Optional[User] = Depends(optional_auth)) -> User:
+
+async def get_current_user(
+    request: Request, user: Optional[User] = Depends(optional_auth)
+) -> User:
     """
     Require authentication via Bearer token or X-API-Key header.
     Raises HTTPException(401) if unauthenticated or user invalid.

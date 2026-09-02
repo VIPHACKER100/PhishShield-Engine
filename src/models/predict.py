@@ -40,13 +40,16 @@ def _get_vector_db() -> VectorSearchDB:
         _vector_db.initialize()
     return _vector_db
 
+
 @functools.lru_cache(maxsize=1)
 def _load_vectorizer(path: str):
     return joblib.load(path)
 
+
 @functools.lru_cache(maxsize=5)
 def _load_model(path: str):
     return joblib.load(path)
+
 
 _BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "models")
 
@@ -69,7 +72,9 @@ def _sanitize_model_name(model_name: str | None) -> str:
     candidate = _default_model_name() if model_name is None else model_name
     allowed = _allowed_model_names()
     if candidate not in allowed:
-        raise ValueError(f"Unsupported model '{candidate}'. Allowed models: {sorted(allowed)}")
+        raise ValueError(
+            f"Unsupported model '{candidate}'. Allowed models: {sorted(allowed)}"
+        )
     return next(name for name in allowed if name == candidate)
 
 
@@ -93,7 +98,9 @@ def _default_model_name() -> str:
     return "naive_bayes"
 
 
-def predict_email(text: str, model_name: str | None = None, raw_headers: str = "") -> dict:
+def predict_email(
+    text: str, model_name: str | None = None, raw_headers: str = ""
+) -> dict:
     """
     Classify a single email text with security scanning.
 
@@ -135,6 +142,7 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
         ml_confidence = float(max(proba))
     elif hasattr(model, "decision_function"):
         import numpy as np
+
         df = model.decision_function(features)[0]
         ml_confidence = float(1.0 / (1.0 + np.exp(-abs(df))))
 
@@ -144,7 +152,9 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
         dl_model = _get_dl_model()
         dl_result = dl_model.predict(text)
     except Exception as e:
-        logger.warning("Deep learning model unavailable, falling back to ML-only: %s", e)
+        logger.warning(
+            "Deep learning model unavailable, falling back to ML-only: %s", e
+        )
 
     # 4. Run Vector Similarity Search
     similar_threats = []
@@ -171,24 +181,32 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
 
     # Vector similarity boost: if similar known phishing emails found
     if similar_threats:
-        spam_matches = sum(1 for m in similar_threats
-                          if m.get("metadata", {}).get("label") == "spam"
-                          and m.get("distance", 999) < 0.5)
+        spam_matches = sum(
+            1
+            for m in similar_threats
+            if m.get("metadata", {}).get("label") == "spam"
+            and m.get("distance", 999) < 0.5
+        )
         if spam_matches >= 2:
             final_prediction = "spam"
-            logger.info("Vector similarity override: %d close phishing matches found", spam_matches)
+            logger.info(
+                "Vector similarity override: %d close phishing matches found",
+                spam_matches,
+            )
 
     # Security rule override (highest priority)
     if security_analysis["risk_score"] > 80:
         final_prediction = "spam"
-        logger.info("Security Rule Override: Flagging as SPAM due to high risk score (%d)",
-                    security_analysis["risk_score"])
+        logger.info(
+            "Security Rule Override: Flagging as SPAM due to high risk score (%d)",
+            security_analysis["risk_score"],
+        )
 
     # 6. Explainability (SHAP with model + vectorizer passed in)
     from src.models.explainability import get_prediction_explanation
+
     explanation = get_prediction_explanation(
-        text, final_prediction, security_analysis,
-        model=model, vectorizer=vectorizer
+        text, final_prediction, security_analysis, model=model, vectorizer=vectorizer
     )
 
     result = {
@@ -210,12 +228,17 @@ def predict_email(text: str, model_name: str | None = None, raw_headers: str = "
         "threat_reasons": security_analysis["threat_reasons"],
         "threat_explanation": explanation["summary"],
         "shap_analysis": explanation.get("shap_analysis", []),
-        "security_details": security_analysis["details"]
+        "security_details": security_analysis["details"],
     }
 
-    logger.info("Prediction: %s (risk=%d, ml=%s, dl=%s, model=%s)",
-                final_prediction, security_analysis["risk_score"],
-                ml_prediction, dl_result.get("prediction"), model_name)
+    logger.info(
+        "Prediction: %s (risk=%d, ml=%s, dl=%s, model=%s)",
+        final_prediction,
+        security_analysis["risk_score"],
+        ml_prediction,
+        dl_result.get("prediction"),
+        model_name,
+    )
     return result
 
 

@@ -3,6 +3,7 @@ Focused unit tests for src/api/auth.py.
 These import auth functions directly, bypassing the full FastAPI app stack
 (no prometheus, arq, or Redis dependencies required).
 """
+
 import os
 import sys
 import uuid
@@ -20,6 +21,7 @@ os.environ.setdefault("ENV", "dev")
 def setup_module(module):
     """Create DB tables before any test in this module runs."""
     from src.core.database import init_db
+
     init_db()
 
 
@@ -37,6 +39,7 @@ def unique_user():
 # ---------------------------------------------------------------------------
 # Registration
 # ---------------------------------------------------------------------------
+
 
 class TestRegistration:
     def test_register_success(self):
@@ -72,6 +75,7 @@ class TestRegistration:
 # ---------------------------------------------------------------------------
 # Authentication & lockout
 # ---------------------------------------------------------------------------
+
 
 class TestAuthentication:
     def test_login_success(self):
@@ -124,6 +128,7 @@ class TestAuthentication:
 # Password reset
 # ---------------------------------------------------------------------------
 
+
 class TestPasswordReset:
     def test_reset_request_unknown_user_returns_none(self):
         # Returns None (caller surfaces generic response; no exception)
@@ -172,9 +177,11 @@ class TestPasswordReset:
 # IDOR & Ownership Protection Tests
 # ---------------------------------------------------------------------------
 
+
 class TestIDORProtection:
     def test_log_usage_and_user_log_ownership(self):
         from src.core.database import SessionLocal, User as DBUser
+
         session = SessionLocal()
         try:
             uA_name = unique_user()
@@ -186,7 +193,9 @@ class TestIDORProtection:
             uB = session.query(DBUser).filter_by(username=uB_name).first()
 
             # Log usage for User A
-            auth_module.log_usage(uA.id, "/predict", '{"text":"hello"}', '{"prediction":"ham"}')
+            auth_module.log_usage(
+                uA.id, "/predict", '{"text":"hello"}', '{"prediction":"ham"}'
+            )
             logsA = auth_module.get_user_logs(uA.id)
             assert len(logsA) > 0
             log_id_A = logsA[0]["id"]
@@ -205,6 +214,7 @@ class TestIDORProtection:
     def test_feedback_ownership_and_deletion(self):
         from src.core.database import SessionLocal, User as DBUser
         from src.models.feedback import save_feedback
+
         session = SessionLocal()
         try:
             uA_name = unique_user()

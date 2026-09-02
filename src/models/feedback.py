@@ -75,7 +75,12 @@ def save_feedback(
         session.add(db_feedback)
         session.commit()
         entry["id"] = db_feedback.id
-        logger.info("Feedback recorded: id=%s, predicted=%s, correct=%s", db_feedback.id, predicted_label, correct_label)
+        logger.info(
+            "Feedback recorded: id=%s, predicted=%s, correct=%s",
+            db_feedback.id,
+            predicted_label,
+            correct_label,
+        )
     except Exception as e:
         session.rollback()
         logger.error("Failed to save feedback to database: %s", e)
@@ -88,6 +93,7 @@ def load_feedback():
     """Load all feedback entries as a list of dicts."""
     _ensure_file()
     import pandas as pd
+
     df = pd.read_csv(FEEDBACK_PATH)
     logger.info("Loaded %d feedback entries", len(df))
     return df
@@ -106,6 +112,7 @@ def merge_feedback_into_dataset(original_csv: str, output_csv: str) -> str:
     Uses feedback's correct_label as the ground truth.
     """
     import pandas as pd
+
     _ensure_file()
 
     original = pd.read_csv(original_csv)
@@ -119,5 +126,10 @@ def merge_feedback_into_dataset(original_csv: str, output_csv: str) -> str:
     )
     merged = pd.concat([original, new_rows], ignore_index=True)
     merged.to_csv(output_csv, index=False)
-    logger.info("Merged %d feedback rows into dataset → %s (%d total)", len(new_rows), output_csv, len(merged))
+    logger.info(
+        "Merged %d feedback rows into dataset → %s (%d total)",
+        len(new_rows),
+        output_csv,
+        len(merged),
+    )
     return output_csv

@@ -33,21 +33,27 @@ from sklearn.preprocessing import MaxAbsScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 from src.utils.logger import logger
 
+
 class DenseTransformer(BaseEstimator, TransformerMixin):
     """Simple transformer that converts sparse matrices to dense arrays."""
+
     def fit(self, X, y=None):
         return self
+
     def transform(self, X):
         import scipy.sparse as sp
+
         if sp.issparse(X):
             return X.toarray()
         return X
+
 
 # ---------------------------------------------------------------------------
 # Optional LightGBM
 # ---------------------------------------------------------------------------
 try:
     from lightgbm import LGBMClassifier
+
     _LGBM_AVAILABLE = True
 except ImportError:
     _LGBM_AVAILABLE = False
@@ -60,35 +66,56 @@ except ImportError:
 # Factory functions — build estimators (some wrapped in sparse-safe Pipelines)
 # ---------------------------------------------------------------------------
 
+
 def _make_naive_bayes():
     return MultinomialNB(alpha=0.1)
 
+
 def _make_logistic_regression():
     return LogisticRegression(C=5.0, solver="saga", max_iter=1000, random_state=42)
+
 
 def _make_svm():
     # Wrap in CalibratedClassifierCV so predict_proba is available
     return CalibratedClassifierCV(LinearSVC(C=1.0, max_iter=10_000), cv=3)
 
+
 def _make_random_forest():
     # MaxAbsScaler preserves sparsity → no dense conversion needed
-    return Pipeline([
-        ("scaler", MaxAbsScaler()),
-        ("clf", RandomForestClassifier(
-            n_estimators=200, max_depth=30, min_samples_leaf=2,
-            n_jobs=-1, random_state=42,
-        )),
-    ])
+    return Pipeline(
+        [
+            ("scaler", MaxAbsScaler()),
+            (
+                "clf",
+                RandomForestClassifier(
+                    n_estimators=200,
+                    max_depth=30,
+                    min_samples_leaf=2,
+                    n_jobs=-1,
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
 
 def _make_gradient_boosting():
     # HistGB requires dense arrays. We densify it inside the pipeline.
-    return Pipeline([
-        ("scaler", MaxAbsScaler()),
-        ("dense", DenseTransformer()),
-        ("clf", HistGradientBoostingClassifier(
-            max_iter=200, learning_rate=0.1, max_leaf_nodes=63, random_state=42,
-        )),
-    ])
+    return Pipeline(
+        [
+            ("scaler", MaxAbsScaler()),
+            ("dense", DenseTransformer()),
+            (
+                "clf",
+                HistGradientBoostingClassifier(
+                    max_iter=200,
+                    learning_rate=0.1,
+                    max_leaf_nodes=63,
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
 
 
 MODEL_FACTORIES: dict[str, callable] = {
@@ -103,14 +130,25 @@ MODEL_FACTORIES: dict[str, callable] = {
 MODEL_REGISTRY = MODEL_FACTORIES
 
 if _LGBM_AVAILABLE:
+
     def _make_lgbm():
-        return Pipeline([
-            ("scaler", MaxAbsScaler()),
-            ("clf", LGBMClassifier(
-                n_estimators=300, learning_rate=0.05, num_leaves=63,
-                n_jobs=-1, random_state=42, verbosity=-1,
-            )),
-        ])
+        return Pipeline(
+            [
+                ("scaler", MaxAbsScaler()),
+                (
+                    "clf",
+                    LGBMClassifier(
+                        n_estimators=300,
+                        learning_rate=0.05,
+                        num_leaves=63,
+                        n_jobs=-1,
+                        random_state=42,
+                        verbosity=-1,
+                    ),
+                ),
+            ]
+        )
+
     MODEL_FACTORIES["lgbm"] = _make_lgbm
 
 
@@ -124,7 +162,9 @@ def split_data(X, y, test_size: float = 0.2, random_state: int = 42):
             next(iter(set(y))),
         )
         return train_test_split(X, y, test_size=test_size, random_state=random_state)
-    return train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
+    return train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=y
+    )
 
 
 def train_model(X_train, y_train, model_name: str, params: dict | None = None):

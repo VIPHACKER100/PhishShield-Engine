@@ -1,4 +1,5 @@
 """Pytest configuration and fixtures."""
+
 import warnings
 
 # Suppress httpx deprecation warning for TestClient
