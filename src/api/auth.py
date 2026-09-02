@@ -51,7 +51,9 @@ def _is_locked(user: User) -> bool:
     return datetime.now(timezone.utc) < user.locked_until.replace(tzinfo=timezone.utc)
 
 
-def _record_failed_login(session, user: User) -> None:
+from src.utils.logger import logger, log_security_event
+
+def _record_failed_login(session, user: User, client_ip: str = "N/A") -> None:
     """Increment failure counter and lock the account when the threshold is exceeded."""
     user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
     if user.failed_login_attempts >= LOGIN_MAX_ATTEMPTS:
@@ -59,6 +61,12 @@ def _record_failed_login(session, user: User) -> None:
         logger.warning(
             "Account '%s' locked for %d minutes after %d failed attempts.",
             user.username, LOGIN_LOCKOUT_MINUTES, user.failed_login_attempts,
+        )
+        log_security_event(
+            "ACCOUNT_LOCKED",
+            client_ip=client_ip,
+            username=user.username,
+            detail=f"Locked for {LOGIN_LOCKOUT_MINUTES} min after {user.failed_login_attempts} failed attempts"
         )
     session.commit()
 
@@ -128,7 +136,7 @@ def register_user(username: str, password: str, email: str | None = None) -> dic
         session.close()
 
 
-def authenticate_user(username: str, password: str) -> dict | None:
+def authenticate_user(username: str, password: str, client_ip: str = "N/A") -> dict | None:
     """
     Validate credentials and return a short-lived JWT token.
 
@@ -148,11 +156,12 @@ def authenticate_user(username: str, password: str) -> dict | None:
         # Account lockout check
         if _is_locked(user):
             logger.warning("Login attempt on locked account: %s", username)
+            log_security_event("AUTH_FAILURE", client_ip=client_ip, username=username, detail="Locked account login attempt")
             return None
 
         # Verify password
         if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
-            _record_failed_login(session, user)
+            _record_failed_login(session, user, client_ip)
             return None
 
         # Successful login

@@ -1,6 +1,6 @@
 # PhishShield-Engine: Enterprise Operations Guide
 
-The architecture of **PhishShield-Engine** implements rigorous operations governance for large-scale enterprise deployments. This document describes the disaster recovery, logging, analytics, zero-trust security controls, and intelligence lifecycle components natively running underneath the ML pipeline.
+The architecture of **PhishShield-Engine** implements rigorous operations governance for large-scale enterprise deployments. This document describes the disaster recovery, logging, analytics, zero-trust security controls, network isolation, and intelligence lifecycle components natively running underneath the ML pipeline.
 
 ---
 
@@ -31,7 +31,51 @@ To keep private tokens, database connections, and internal JWT signing keys isol
 
 ---
 
-## 2. Automated Model Lifecycle (MLOps) & Processing
+## 2. HTTPS & Security Headers Middleware
+
+PhishShield automatically enforces production HTTP security headers on all API responses via FastAPI middleware (`src/api/app.py`):
+
+- **Strict-Transport-Security (HSTS)**: `max-age=31536000; includeSubDomains; preload`
+- **X-Content-Type-Options**: `nosniff`
+- **X-Frame-Options**: `DENY`
+- **X-XSS-Protection**: `1; mode=block`
+- **Referrer-Policy**: `strict-origin-when-cross-origin`
+- **Content-Security-Policy**: Restricted default, script, style, and font sources.
+- **HTTPS Enforcement**: Set `ENFORCE_HTTPS=true` in `.env` to automatically redirect all HTTP requests to HTTPS via `HTTPSRedirectMiddleware`.
+
+---
+
+## 3. Dedicated Security Audit Logging (`logs/security_audit.log`)
+
+In addition to standard operational logs (`logs/app.log`), PhishShield writes structured audit events to `logs/security_audit.log` via `security_logger` (`src/utils/logger.py`).
+
+### Log Event Format
+`[TIMESTAMP] [LEVEL] [SECURITY] EVENT=<type> IP=<ip> USER=<user> DETAIL=<detail>`
+
+### Tracked Security Events
+- `USER_REGISTERED`: Successful account creation.
+- `AUTH_SUCCESS`: Successful user authentication.
+- `AUTH_FAILURE`: Failed login attempt (wrong password or locked account).
+- `ACCOUNT_LOCKED`: Account locked due to exceeding max failure threshold.
+- `PASSWORD_RESET_REQUESTED` & `PASSWORD_RESET_SUCCESS`: Password reset activity.
+- `RATE_LIMIT_EXCEEDED`: Client exceeded endpoint rate limit threshold.
+- `CLIENT_ERROR` & `SERVER_ERROR`: 4xx / 5xx HTTP response anomalies.
+- `SYSTEM_STARTUP`: Server lifecycle events.
+
+---
+
+## 4. Database & Infrastructure Network Isolation
+
+Direct public access to internal databases and message queues is strictly prohibited in containerized deployments (`docker-compose.yml`):
+
+- **PostgreSQL**: Bound to `127.0.0.1:5432:5432` (loopback only; inaccessible from public `0.0.0.0`).
+- **Redis**: Bound to `127.0.0.1:6379:6379` (loopback only).
+- **Prometheus**: Bound to `127.0.0.1:9090:9090`.
+- **Grafana**: Bound to `127.0.0.1:3000:3000`.
+
+---
+
+## 5. Automated Model Lifecycle (MLOps) & Processing
 
 The internal Machine Learning ecosystem governs its own drift, monitoring, and validation.
 
@@ -42,28 +86,18 @@ The internal Machine Learning ecosystem governs its own drift, monitoring, and v
 
 ---
 
-## 3. Analytics, Explainability (XAI), & Observability
+## 6. Analytics, Explainability (XAI), & Observability
 
 For cybersecurity analysts reviewing inbound traffic spikes:
 
 - `POST /export-report`: Compiles an immediately readable mapping merging all 10 active Forensic Rules (including `cyrillic_url`) alongside the Scikit-learn outputs.
 - `GET /metrics`: Native **Prometheus** endpoint exposing model inference latencies, API request rates, and active threat detection histograms. Ideal for Grafana integrations.
 - **SHAP Integration:** The XAI pipeline utilizes `shap.LinearExplainer` to explicitly assign weight and threat contribution to individual tokens in the email body.
-- **Unified DB Migrations**: Schema evolution (such as security columns for failed login counters, lockout timestamps, and password reset tokens) is managed deterministically via **Alembic** (`alembic upgrade head`).
+- **Unified DB Migrations**: Schema evolution is managed deterministically via **Alembic** (`alembic upgrade head`).
 
 ---
 
-## 4. Docker Optimization
-
-For enterprise environments requiring fast CI/CD builds, the Docker image includes conditional build parameters and environment injection.
-
-- **Environment Injection:** Requires a strictly formatted `.env` file containing Postgres/SQLite `DATABASE_URL`, `REDIS_HOST`, and production `JWT_SECRET`.
-- **Fast Build (Default):** Skips local model retraining (`docker build .`).
-- **Full Build:** Trains the ensemble locally within the build container by passing `--build-arg TRAIN_MODELS=true`.
-
----
-
-## 5. Chaos Monkey & Production Load Testing
+## 7. Chaos Monkey & Production Load Testing
 
 To ensure reliability scaling past standard 60-RPM environments limiters:
 

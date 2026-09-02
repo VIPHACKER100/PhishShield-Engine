@@ -31,6 +31,8 @@ from src.api.auth import (
 from src.api.dependencies import get_current_user
 from src.core.database import User
 
+from src.utils.logger import log_security_event
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 _limiter = Limiter(key_func=get_remote_address)
 
@@ -44,10 +46,13 @@ async def register(request: Request, body: RegisterRequest):
     The api_key in the response is a one-time secret — store it securely.
     It will not be shown again.
     """
+    client_ip = get_remote_address(request)
     try:
         result = register_user(body.username, body.password, body.email)
+        log_security_event("USER_REGISTERED", client_ip=client_ip, username=body.username)
         return result
     except ValueError as e:
+        log_security_event("REGISTER_FAILED", client_ip=client_ip, username=body.username, detail=str(e))
         raise HTTPException(status_code=409, detail=str(e))
 
 
@@ -60,9 +65,12 @@ async def login(request: Request, body: LoginRequest):
     Returns 401 for any failure (wrong credentials, locked account) without
     revealing which condition triggered it.
     """
-    result = authenticate_user(body.username, body.password)
+    client_ip = get_remote_address(request)
+    result = authenticate_user(body.username, body.password, client_ip=client_ip)
     if result is None:
+        log_security_event("AUTH_FAILURE", client_ip=client_ip, username=body.username, detail="Invalid credentials or locked account")
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    log_security_event("AUTH_SUCCESS", client_ip=client_ip, username=body.username)
     return result
 
 
@@ -78,7 +86,9 @@ async def password_reset_request(request: Request, body: PasswordResetRequestSch
     In a production deployment the raw token should be emailed to the registered
     address. Here it is returned in the response body for development/testing.
     """
+    client_ip = get_remote_address(request)
     raw_token = request_password_reset(body.username)
+    log_security_event("PASSWORD_RESET_REQUESTED", client_ip=client_ip, username=body.username)
     # Return a uniform response body to prevent user enumeration.
     # In production: send raw_token via email and do NOT include it in the response.
     return {
@@ -97,13 +107,18 @@ async def password_reset(request: Request, body: PasswordResetSchema):
     The token is valid for a limited time (default 1 hour) and is invalidated
     after first use.
     """
+    client_ip = get_remote_address(request)
     try:
         ok = reset_password(body.username, body.token, body.new_password)
     except ValueError as e:
+        log_security_event("PASSWORD_RESET_FAILED", client_ip=client_ip, username=body.username, detail=str(e))
         raise HTTPException(status_code=422, detail=str(e))
 
     if not ok:
+        log_security_event("PASSWORD_RESET_FAILED", client_ip=client_ip, username=body.username, detail="Invalid or expired token")
         raise HTTPException(status_code=400, detail="Invalid or expired reset token.")
+
+    log_security_event("PASSWORD_RESET_SUCCESS", client_ip=client_ip, username=body.username)
     return {"detail": "Password updated successfully."}
 
 

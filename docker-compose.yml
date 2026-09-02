@@ -45,12 +45,14 @@ services:
       - api
       - postgres
 
+  # Restrict Redis to loopback interface (prevent public internet access)
   redis:
     image: "redis:7-alpine"
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     restart: always
 
+  # Restrict PostgreSQL to loopback interface (prevent direct internet access to database)
   postgres:
     image: "postgres:16-alpine"
     env_file:
@@ -58,22 +60,24 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     restart: always
 
+  # Restrict Prometheus internal dashboard to loopback
   prometheus:
     image: prom/prometheus:latest
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./config/alert_rules.yml:/etc/prometheus/alert_rules.yml
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     restart: always
 
+  # Restrict Grafana internal dashboard to loopback
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
     depends_on:
