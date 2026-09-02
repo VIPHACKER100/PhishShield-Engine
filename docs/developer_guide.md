@@ -106,6 +106,7 @@ Handles the entire ML lifecycle from raw data to registered production models.
 - **Brute-Force Lockout**: Tracks `failed_login_attempts` per user. Reaching 5 failures locks the account for 15 minutes (`locked_until`).
 - **Timing Attack Mitigation**: Employs constant-time string comparison (`hmac.compare_digest`) for API key verification (`pse_` prefix) and executes dummy password hashes for non-existent users.
 - **Password Reset Flow**: `request_password_reset` issues a single-use token (`secrets.token_urlsafe(32)`). Only SHA-256 digests (`password_reset_token_hash`) and expirations (`password_reset_expires`) are stored in the database.
+- **Insecure Direct Object Reference (IDOR) Defense**: All user resource queries (`GET /auth/me`, `GET /auth/logs`, `GET /auth/logs/{log_id}`, `GET /auth/feedback/{feedback_id}`, `DELETE /auth/feedback/{feedback_id}`) filter strictly by `resource.user_id == current_user.id`. Accessing unowned resources returns `404 Not Found` without disclosing resource existence.
 
 ### 2. Rate Limiting (`SlowAPI`)
 

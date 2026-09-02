@@ -7,6 +7,7 @@ from arq.connections import RedisSettings
 
 from src.api.schemas import PredictRequest, BatchPredictRequest, FeedbackRequest
 from src.api.dependencies import ab_test, optional_auth
+from src.core.database import User
 from src.models.predict import predict_email, predict_batch
 from src.models.feedback import save_feedback, feedback_count
 from src.utils.logger import logger
@@ -101,13 +102,15 @@ async def export_report_endpoint(body: PredictRequest):
         raise HTTPException(status_code=500, detail="Failed to generate report")
 
 @router.post("/feedback")
-async def submit_feedback(body: FeedbackRequest):
+async def submit_feedback(body: FeedbackRequest, user: Optional[User] = Depends(optional_auth)):
     clean_text = anonymize_text(body.email_text)
+    user_id = user.id if user else None
     entry = save_feedback(
         email_text=clean_text,
         predicted_label=body.predicted_label,
         correct_label=body.correct_label,
         model_used=body.model_used,
+        user_id=user_id,
     )
     ab_test.record(body.model_used, body.predicted_label, body.correct_label)
     ab_test.save()

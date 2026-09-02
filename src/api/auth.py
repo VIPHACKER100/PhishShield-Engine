@@ -305,3 +305,104 @@ def log_usage(user_id: int | None, endpoint: str, request_body: str, response_bo
         logger.error("Failed to log usage: %s", e)
     finally:
         session.close()
+
+
+def get_user_by_username(username: str) -> User | None:
+    """Fetch User instance by username."""
+    session = SessionLocal()
+    try:
+        return session.query(User).filter_by(username=username).first()
+    finally:
+        session.close()
+
+
+# ---------------------------------------------------------------------------
+# Ownership-checked resource access (IDOR Prevention)
+# ---------------------------------------------------------------------------
+
+def get_user_logs(user_id: int) -> list[dict]:
+    """Retrieve usage logs strictly filtered by user_id."""
+    session = SessionLocal()
+    try:
+        logs = session.query(UsageLog).filter_by(user_id=user_id).order_by(UsageLog.id.desc()).all()
+        return [
+            {
+                "id": l.id,
+                "endpoint": l.endpoint,
+                "request_body": l.request_body,
+                "response_body": l.response_body,
+                "timestamp": l.timestamp.isoformat() if l.timestamp else None,
+            }
+            for l in logs
+        ]
+    finally:
+        session.close()
+
+
+def get_user_log_by_id(log_id: int, user_id: int) -> dict | None:
+    """
+    Retrieve a specific usage log by log_id.
+    Strictly verifies ownership: log.user_id == user_id. Returns None if not owned.
+    """
+    session = SessionLocal()
+    try:
+        log = session.query(UsageLog).filter_by(id=log_id, user_id=user_id).first()
+        if log is None:
+            return None
+        return {
+            "id": log.id,
+            "user_id": log.user_id,
+            "endpoint": log.endpoint,
+            "request_body": log.request_body,
+            "response_body": log.response_body,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+        }
+    finally:
+        session.close()
+
+
+def get_user_feedback_by_id(feedback_id: int, user_id: int) -> dict | None:
+    """
+    Retrieve a feedback record by feedback_id.
+    Strictly verifies ownership: feedback.user_id == user_id. Returns None if not owned.
+    """
+    from src.core.database import Feedback as DBFeedback
+    session = SessionLocal()
+    try:
+        fb = session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        if fb is None:
+            return None
+        return {
+            "id": fb.id,
+            "user_id": fb.user_id,
+            "email_text": fb.email_text,
+            "predicted_label": fb.predicted_label,
+            "correct_label": fb.correct_label,
+            "model_used": fb.model_used,
+            "timestamp": fb.timestamp.isoformat() if fb.timestamp else None,
+        }
+    finally:
+        session.close()
+
+
+def delete_user_feedback(feedback_id: int, user_id: int) -> bool:
+    """
+    Delete a feedback record by feedback_id.
+    Strictly verifies ownership: feedback.user_id == user_id. Returns False if not owned.
+    """
+    from src.core.database import Feedback as DBFeedback
+    session = SessionLocal()
+    try:
+        fb = session.query(DBFeedback).filter_by(id=feedback_id, user_id=user_id).first()
+        if fb is None:
+            return False
+        session.delete(fb)
+        session.commit()
+        logger.info("Deleted feedback id=%s owned by user_id=%s", feedback_id, user_id)
+        return True
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+

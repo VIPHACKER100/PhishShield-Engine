@@ -57,11 +57,14 @@ class Feedback(Base):
     __tablename__ = "feedback"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     email_text = Column(Text, nullable=False)
     predicted_label = Column(String, nullable=False)
     correct_label = Column(String, nullable=False)
     model_used = Column(String, nullable=False)
+
+    user = relationship("User")
 
 def init_db():
     Base.metadata.create_all(bind=engine)

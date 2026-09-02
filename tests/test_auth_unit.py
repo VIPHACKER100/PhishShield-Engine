@@ -166,3 +166,80 @@ class TestPasswordReset:
         raw_token = auth_module.request_password_reset(u)
         with pytest.raises(ValueError):
             auth_module.reset_password(u, raw_token, "weak")
+
+
+# ---------------------------------------------------------------------------
+# IDOR & Ownership Protection Tests
+# ---------------------------------------------------------------------------
+
+class TestIDORProtection:
+    def test_log_usage_and_user_log_ownership(self):
+        from src.core.database import SessionLocal, User as DBUser
+        session = SessionLocal()
+        try:
+            uA_name = unique_user()
+            uB_name = unique_user()
+            auth_module.register_user(uA_name, "UserA@123")
+            auth_module.register_user(uB_name, "UserB@123")
+
+            uA = session.query(DBUser).filter_by(username=uA_name).first()
+            uB = session.query(DBUser).filter_by(username=uB_name).first()
+
+            # Log usage for User A
+            auth_module.log_usage(uA.id, "/predict", '{"text":"hello"}', '{"prediction":"ham"}')
+            logsA = auth_module.get_user_logs(uA.id)
+            assert len(logsA) > 0
+            log_id_A = logsA[0]["id"]
+
+            # User A can fetch their log
+            logA = auth_module.get_user_log_by_id(log_id_A, uA.id)
+            assert logA is not None
+            assert logA["id"] == log_id_A
+
+            # User B cannot fetch User A's log (IDOR check returns None)
+            logB_attempt = auth_module.get_user_log_by_id(log_id_A, uB.id)
+            assert logB_attempt is None
+        finally:
+            session.close()
+
+    def test_feedback_ownership_and_deletion(self):
+        from src.core.database import SessionLocal, User as DBUser
+        from src.models.feedback import save_feedback
+        session = SessionLocal()
+        try:
+            uA_name = unique_user()
+            uB_name = unique_user()
+            auth_module.register_user(uA_name, "UserA@123")
+            auth_module.register_user(uB_name, "UserB@123")
+
+            uA = session.query(DBUser).filter_by(username=uA_name).first()
+            uB = session.query(DBUser).filter_by(username=uB_name).first()
+
+            # Save feedback for User A
+            fb_entry = save_feedback(
+                email_text="Phishing email body",
+                predicted_label="ham",
+                correct_label="spam",
+                model_used="svm",
+                user_id=uA.id,
+            )
+            fb_id = fb_entry["id"]
+
+            # User A can retrieve their feedback
+            fbA = auth_module.get_user_feedback_by_id(fb_id, uA.id)
+            assert fbA is not None
+            assert fbA["id"] == fb_id
+
+            # User B cannot retrieve User A's feedback (IDOR check returns None)
+            assert auth_module.get_user_feedback_by_id(fb_id, uB.id) is None
+
+            # User B cannot delete User A's feedback (IDOR check returns False)
+            assert auth_module.delete_user_feedback(fb_id, uB.id) is False
+
+            # User A can delete their feedback
+            assert auth_module.delete_user_feedback(fb_id, uA.id) is True
+
+            # Ensure deleted
+            assert auth_module.get_user_feedback_by_id(fb_id, uA.id) is None
+        finally:
+            session.close()

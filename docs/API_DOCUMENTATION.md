@@ -123,6 +123,46 @@ Token properties:
 
 ---
 
+### 5. User Profile & Owned Resource Access (IDOR Protected)
+
+The following endpoints allow authenticated users to view and manage their own resources. Every query strictly verifies that `resource.user_id == current_user.id`. Access attempts on another user's resources return `404 Not Found` (preventing IDOR attacks).
+
+#### Profile Info
+- **URL**: `GET /auth/me`
+- **Auth**: Required (`Bearer <JWT>` or `X-API-Key`)
+- **Response** (`200 OK`):
+  ```json
+  {
+    "id": 1,
+    "username": "alice",
+    "email": "alice@example.com",
+    "is_email_verified": false,
+    "created_at": "2026-09-02T18:00:00+00:00"
+  }
+  ```
+
+#### Usage Logs (Owned)
+- **URL**: `GET /auth/logs`
+- **Auth**: Required (`Bearer <JWT>` or `X-API-Key`)
+- **Response** (`200 OK`): List of usage log entries belonging to the authenticated user.
+
+#### Specific Usage Log (IDOR Protected)
+- **URL**: `GET /auth/logs/{log_id}`
+- **Auth**: Required (`Bearer <JWT>` or `X-API-Key`)
+- **Response**: `200 OK` if owned by user; `404 Not Found` if not owned or missing.
+
+#### Specific Feedback Entry (IDOR Protected)
+- **URL**: `GET /auth/feedback/{feedback_id}`
+- **Auth**: Required (`Bearer <JWT>` or `X-API-Key`)
+- **Response**: `200 OK` if owned by user; `404 Not Found` if not owned or missing.
+
+#### Delete Feedback Entry (IDOR Protected)
+- **URL**: `DELETE /auth/feedback/{feedback_id}`
+- **Auth**: Required (`Bearer <JWT>` or `X-API-Key`)
+- **Response**: `200 OK` if owned by user; `404 Not Found` if not owned or missing.
+
+---
+
 ### Authentication Headers
 
 For protected endpoints, provide credentials using **one** of:

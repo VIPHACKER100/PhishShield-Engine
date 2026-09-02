@@ -26,6 +26,7 @@ def save_feedback(
     predicted_label: str,
     correct_label: str,
     model_used: str = "unknown",
+    user_id: int | None = None,
 ) -> dict:
     """
     Record a user feedback correction.
@@ -40,6 +41,8 @@ def save_feedback(
         What the user says is correct.
     model_used : str
         Which model made the prediction.
+    user_id : int or None
+        User ID of the owner.
 
     Returns
     -------
@@ -52,11 +55,12 @@ def save_feedback(
         "predicted_label": predicted_label,
         "correct_label": correct_label,
         "model_used": model_used,
+        "user_id": user_id,
     }
     # Write to CSV (for web UI / direct access)
     with open(FEEDBACK_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDS)
-        writer.writerow(entry)
+        writer.writerow({k: v for k, v in entry.items() if k in FIELDS})
 
     # Write to SQLAlchemy database
     session = SessionLocal()
@@ -65,11 +69,13 @@ def save_feedback(
             email_text=email_text,
             predicted_label=predicted_label,
             correct_label=correct_label,
-            model_used=model_used
+            model_used=model_used,
+            user_id=user_id,
         )
         session.add(db_feedback)
         session.commit()
-        logger.info("Feedback recorded: predicted=%s, correct=%s", predicted_label, correct_label)
+        entry["id"] = db_feedback.id
+        logger.info("Feedback recorded: id=%s, predicted=%s, correct=%s", db_feedback.id, predicted_label, correct_label)
     except Exception as e:
         session.rollback()
         logger.error("Failed to save feedback to database: %s", e)
