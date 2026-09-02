@@ -2,11 +2,15 @@
 Secrets Management — manages and isolates internal environment tokens.
 
 Priority (highest to lowest):
-  1. OS environment variables  ← always wins
-  2. config/secrets.json       ← local dev convenience only
+  1. OS environment variables  ← always wins (all keys in the JSON file are overlaid)
+  2. config/secrets.json       ← local dev convenience only (.gitignored)
 
 In production (ENV=prod) the app will refuse to start if JWT_SECRET is missing
 or is the well-known development placeholder.
+
+Usage:
+    from src.utils.secrets import vault
+    jwt_secret = vault.get("JWT_SECRET")
 """
 import os
 import json
@@ -28,11 +32,27 @@ class SecretsVault:
             try:
                 with open(self.file_path, "r") as f:
                     self.keys.update(json.load(f))
+                logger.debug("Loaded secrets from '%s'.", self.file_path)
             except Exception as exc:
                 logger.warning("Could not read secrets file '%s': %s", self.file_path, exc)
 
-        # 2. Environment variables always win — overlay after JSON
-        for key in ("JWT_SECRET", "DATABASE_URL", "REDIS_HOST", "APP_SECRET_KEY"):
+        # 2. Environment variables always win — overlay ALL keys that appear in the JSON,
+        #    plus the core required keys. This ensures any new key added to secrets.json
+        #    is automatically overrideable by a matching environment variable.
+        keys_to_check = set(self.keys.keys()) | {
+            "JWT_SECRET",
+            "DATABASE_URL",
+            "REDIS_HOST",
+            "APP_SECRET_KEY",
+            "KAFKA_BROKER_URL",
+            "KAFKA_TOPIC",
+            "SMTP_HOST",
+            "SMTP_PORT",
+            "SMTP_USER",
+            "SMTP_PASSWORD",
+            "SENTRY_DSN",
+        }
+        for key in keys_to_check:
             env_val = os.environ.get(key)
             if env_val:
                 self.keys[key] = env_val
@@ -65,7 +85,8 @@ class SecretsVault:
         """Return the secret for `key`, or `default` if absent."""
         val = self.keys.get(key)
         if not val:
-            logger.warning("Secret '%s' missing from vault.", key)
+            # Log at DEBUG level only — do not expose key names in operational WARNING logs
+            logger.debug("Secret '%s' missing from vault.", key)
             return default
         return val
 

@@ -30,12 +30,30 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Environment
+# Environment & Secrets — NEVER commit real credentials
 .env
 .env.local
-data/versions/run_20260301_124453_emails.csv
+.env.*.local
+.env.production
+.env.staging
 
+# Local dev secrets file (use config/secrets.example.json as template)
+config/secrets.json
+config/secrets*.json
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Data paths
+data/versions/run_20260301_124453_emails.csv
 data/versions/run_20260621_234050_emails.csv
 C:\Users\vipha\Desktop\PhishShield-Engine\data\processed\preprocessed.csv
 data/feedback/feedback_data.csv
 data/*
+
