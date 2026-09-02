@@ -199,12 +199,14 @@ docker-compose up -d
 
 ## Testing & Quality Assurance
 
+* **Input Validation & Sanitization Tests**: `python -m pytest tests/test_input_validation.py -v` (29 tests)
 * **Auth & Security Unit Tests**: `python -m pytest tests/test_auth_unit.py -v` (21 tests)
-* **Abuse Protection Tests**: `python -m pytest tests/test_abuse_protection.py -v` (29 tests)
-* **Full Test Suite**: `python -m pytest tests/ -v`
+* **Abuse & Bot Protection Tests**: `python -m pytest tests/test_abuse_protection.py -v` (29 tests)
+* **Secrets Audit Tests**: `python -m pytest tests/test_secrets_audit.py -v` (16 tests)
+* **Full Security Test Suite**: `python -m pytest tests/test_input_validation.py tests/test_secrets_audit.py tests/test_auth_unit.py tests/test_abuse_protection.py -v` (**95 / 95 tests passing**)
 * **Integration Tests**: `python scripts/chaos_monkey.py` (Simulates failure scenarios)
 * **Compliance Audit**: View `logs/compliance.log` to audit data retention and forensic overrides.
-* **Security Audit Log**: View `logs/security_audit.log` for authentication events, rate limit violations, and bot blocking.
+* **Security Audit Log**: View `logs/security_audit.log` for authentication events, rate limit violations, bot blocking, and client error anomalies.
 * **Warning Suppression**: Tests use `tests/conftest.py` to suppress httpx deprecation and LGBM feature name warnings.
 
 ---

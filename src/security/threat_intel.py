@@ -5,6 +5,7 @@ Threat Intelligence Knowledge Base — Local database for known malicious domain
 import sqlite3
 import os
 from datetime import datetime, timezone
+from src.utils.sanitizer import validate_domain, sanitize_text
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "threat_intel.db")
 
@@ -39,9 +40,14 @@ def check_domain_reputation(domain: str) -> dict:
     if not os.path.exists(DB_PATH):
         init_threat_db()
         
+    try:
+        clean_domain = validate_domain(domain)
+    except ValueError:
+        return {"known_threat": False}
+
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT reason FROM bad_domains WHERE domain = ?", (domain.lower(),))
+    c.execute("SELECT reason FROM bad_domains WHERE domain = ?", (clean_domain,))
     res = c.fetchone()
     conn.close()
     
@@ -50,11 +56,14 @@ def check_domain_reputation(domain: str) -> dict:
     return {"known_threat": False}
 
 def report_malicious_domain(domain: str, reason: str):
-    """Add a domain to the local blocklist."""
+    """Add a domain to the local blocklist after strict validation."""
+    clean_domain = validate_domain(domain)
+    clean_reason = sanitize_text(reason, max_length=255)
+
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT OR REPLACE INTO bad_domains VALUES (?, ?, ?)",
-              (domain.lower(), reason, datetime.now(timezone.utc).isoformat()))
+              (clean_domain, clean_reason, datetime.now(timezone.utc).isoformat()))
     conn.commit()
     conn.close()
 

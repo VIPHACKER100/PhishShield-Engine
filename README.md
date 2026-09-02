@@ -1,6 +1,6 @@
 # PhishShield-Engine
 
-**PhishShield-Engine** is an AI-powered email security platform designed to detect spam, phishing attacks, malicious URLs, homograph spoofing, and identity impersonation using advanced machine learning, zero-trust authentication, and multi-layer forensic intelligence.
+**PhishShield-Engine** is an AI-powered email security platform designed to detect spam, phishing attacks, malicious URLs, homograph spoofing, and identity impersonation using advanced machine learning, zero-trust authentication, multi-layer forensic intelligence, and strict input sanitization.
 
 ---
 
@@ -25,18 +25,20 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 ### Core Security Intelligence
 
 - **Phishing Detection**: Specialized logic for identifying social engineering and credential theft attempts.
-- **Obfuscation Defense (Phase 85)**: Advanced detection of zero-width characters and hidden markers used to bypass traditional filters.
+- **Obfuscation Defense**: Advanced detection of zero-width characters and hidden markers used to bypass traditional filters.
 - **Homograph Attack Protection**: Identifies IDN (Internationalized Domain Name) attacks, Cyrillic alphabet URL spoofing, and Unicode-based visual spoofing.
 - **Fuzzy Brand Protection**: Detects impersonation of 15+ major global brands (PayPal, Amazon, Google, etc.).
 - **Header Forensics**: Deep validation of SPF/DKIM/DMARC and detection of sender-domain mismatches.
 
-### Hardened Authentication & Zero-Trust Governance
+### Hardened Authentication, Zero-Trust & Input Sanitization
 
+- **Input Validation & Sanitization (`src/utils/sanitizer.py`)**: Automatic null-byte stripping, ASCII control-character removal, HTML tag escaping (`html.escape`), and strict regex constraints on usernames (`^[a-zA-Z0-9_-]{3,50}$`), domains, and tokens to neutralize Stored/Reflected XSS and SQL injection attempts.
+- **Bcrypt DoS Defense**: 128-character cap on all password fields to prevent CPU denial-of-service vector attacks.
 - **Secure Password Hashing**: Passwords hashed with `bcrypt` work-factor salting. Enforces 8+ characters with numeric digit and special symbol requirements.
 - **Short-Lived JWT Sessions**: Signed via `PyJWT` with 1-hour expiration, including unique `jti` and `iat` claims.
 - **Brute-Force & Lockout Protection**: Automatic account lockout after 5 consecutive failed attempts (`LOGIN_LOCKOUT_MINUTES=15`).
 - **Timing Attack & Enumeration Defenses**: Constant-time `hmac.compare_digest` for `pse_` API keys and dummy `bcrypt` operations for non-existent users.
-- **Granular Rate Limiting**: Per-endpoint limits via `SlowAPI` (e.g. 5/min on login, 3/min on register & password reset requests).
+- **Abuse & Bot Protection**: Per-endpoint rate limiting via `SlowAPI`, empty `User-Agent` blocking, 14-tool scanner blacklist (`sqlmap`, `nikto`), and honeypot header/payload traps.
 - **Secure Password Reset**: One-time reset tokens (`secrets.token_urlsafe(32)`) expiring in 1 hour; only SHA-256 digests are stored in DB.
 - **Production Secrets Vault**: Env-first secret management (`src/utils/secrets.py`) with mandatory production startup guards preventing weak/default `JWT_SECRET` keys.
 
@@ -50,108 +52,74 @@ AI-powered email security engine that identifies spam, phishing, and identity sp
 
 ### Operations & Scalability
 
-- **Docker Orchestration (Phase 81)**: Production-ready multi-container setup (API + Scheduler + Database) managed by `docker-compose` with `.env` injection.
-- **Database Migrations**: Automated schema versioning via **Alembic** mapped to PostgreSQL/SQLite via SQLAlchemy (includes auth security fields migration `8eb220da558a8768`).
+- **Docker Orchestration**: Production-ready multi-container setup (API + Scheduler + Database) managed by `docker-compose` with loopback database isolation (`127.0.0.1`).
+- **Database Migrations**: Automated schema versioning via **Alembic** mapped to PostgreSQL/SQLite via SQLAlchemy.
 - **Background Processing**: Heavy computational tasks and external alerts are offloaded to **ARQ** (Redis-based async queue).
-- **Observability**: Exposes a `/metrics` endpoint natively instrumented for **Prometheus** and Grafana dashboards.
-- **Gmail Integration (Phase 83)**: Automated inbox scanning using secure Google OAuth2 flows. [Read the Integration Guide](docs/GMAIL_INTEGRATION.md).
+- **Observability & Security Audit Logging**: Exposes a `/metrics` endpoint for **Prometheus** / Grafana, and logs structured security events to `logs/security_audit.log`.
+- **Gmail Integration**: Automated inbox scanning using secure Google OAuth2 flows. [Read the Integration Guide](docs/GMAIL_INTEGRATION.md).
+
+---
+
+## Documentation Index
+
+Explore our comprehensive documentation suite:
+
+- 📖 [API Documentation](docs/API_DOCUMENTATION.md) — Complete endpoint reference, auth schemas, rate limits, and error codes.
+- 🏗️ [System Architecture](docs/ARCHITECTURE.md) — Deep-dive into component design, pipelines, and data flow.
+- 🛡️ [Input Validation & Sanitization Guide](docs/INPUT_VALIDATION_AND_SANITIZATION.md) — Reference on XSS escaping, null-byte stripping, regex constraints, and Pydantic validators.
+- 🔒 [Security Audit & Compliance](docs/SECURITY_AUDIT_AND_COMPLIANCE.md) — Enterprise security posture, audit logging format (`logs/security_audit.log`), and compliance policies.
+- 🚀 [Enterprise Operations Guide](docs/ENTERPRISE_DEPLOYMENT.md) — HTTPS setup, Docker loopback isolation, secrets management, and disaster recovery.
+- 💻 [Developer Guide](docs/developer_guide.md) — Setup, testing instructions (**95/95 tests passing**), and codebase structure.
+- 🤖 [ML Training Guide](docs/ML_TRAINING_GUIDE.md) — Dataset generation, vectorizers, hyperparameter tuning, and ensemble training.
+- 🚩 [Security Flags Reference](docs/SECURITY_FLAGS.md) — Explanation of all 10 forensic threat rules.
+- 🛠️ [CLI Reference](docs/CLI_REFERENCE.md) — Usage instructions for `cli/manage.py`.
+- ✉️ [Gmail Integration Guide](docs/GMAIL_INTEGRATION.md) — Step-by-step setup for Gmail OAuth2 scanning.
+- 🤝 [Contributing Guidelines](docs/CONTRIBUTING.md) — Coding conventions, security guidelines, and PR workflow.
 
 ---
 
 ## Quick Start
 
-### 1. Environment Setup
+### 1. Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/VIPHACKER100/PhishShield-Engine.git
+cd PhishShield-Engine
+
+# Create virtual environment
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate    # macOS/Linux
+venv\Scripts\activate      # Windows
+# source venv/bin/activate # Linux/macOS
 
-# Install the engine as a package
-pip install -e .
+# Install dependencies
+pip install -r requirements.txt
 
-# Run DB Migrations
+# Run database migrations
 alembic upgrade head
 ```
 
-### 2. Model Initialization
+### 2. Run the Development Server
 
 ```bash
-# Generate synthetic dataset and train the ensemble pipeline
-python scripts/train_pipeline.py --generate --ensemble
+# Start API server
+python cli/manage.py serve --port 8000
 ```
 
-### 3. Launch the Platform
+Access the interactive dashboard at [http://127.0.0.1:8000/dashboard](http://127.0.0.1:8000/dashboard).
+
+### 3. Run Security & Unit Tests
 
 ```bash
-python cli/manage.py serve
+python -m pytest tests/test_input_validation.py tests/test_secrets_audit.py tests/test_auth_unit.py tests/test_abuse_protection.py -v
 ```
 
-Open [http://localhost:8000](http://localhost:8000) for the Interactive Security Dashboard.
+> **95 / 95 tests passing** across all security test modules.
 
 ---
 
-## Project Structure
-
-```text
-PhishShield-Engine/
-├── .github/                   # CI/CD Workflows (GitHub Actions)
-├── alembic/                   # Database Migrations (Schema Versioning)
-├── cli/                       # Developer Management Tool (manage.py)
-├── config/                    # Global Governance (config.yaml, secrets.json)
-├── data/                      # Persistent Threat Intelligence, Databases & Feedback
-├── docs/                      # Technical Documentation (API, Architecture & Security)
-├── models/                    # Trained Model Artifacts (.pkl) & Metrics
-├── scripts/                   # Retraining, Chaos Monkey & Pipeline Automation
-├── src/                       # Source Code
-│   ├── api/                   # FastAPI Server, Hardened Auth Routers & Cinematic UI
-│   ├── core/                  # Database Models & Connections
-│   ├── features/              # Feature Engineering & Vectorization
-│   ├── integrations/          # Gmail API Scanning Client
-│   ├── models/                # ML Inference, Training, Evaluating & XAI
-│   ├── preprocessing/         # Text Cleaning & Normalization
-│   ├── security/              # Forensic Engines (URL, Homograph, Brand, Obfuscation)
-│   └── utils/                 # Config Loader, Logger, Secrets Vault & Compliance Tools
-├── tests/                     # Unit & Security Testing Suite (pytest)
-├── docker-compose.yml         # Container Orchestration
-├── Dockerfile                 # Docker Image Generation
-├── requirements.txt           # Python Dependencies
-└── README.md
-```
-
----
-
-## Author
+## Maintainer
 
 **VIPHACKER100 (Aryan Ahirwar)**  
-Cybersecurity Researcher | AI Security Developer  
+*Cybersecurity Researcher | AI Security Lead*  
 *Last Updated: 2026-09-02*
-
----
-
-## License & Disclaimer
-
-This tool is for educational and defensive security purposes only. Licensed under MIT.
-
----
-
-## Documentation
-
-Detailed technical documentation is available in the `docs/` directory:
-
-- [System Architecture](docs/ARCHITECTURE.md): High-level system design diagram, data flow, and modular components.
-- [Security Flags Guide](docs/SECURITY_FLAGS.md): In-depth breakdown of the **10 independent forensic threat scanners**.
-- [Developer Guide](docs/developer_guide.md): Code structure, CLI setup, auth subsystems, and automated maintenance procedures.
-- [API Documentation](docs/API_DOCUMENTATION.md): Complete REST endpoint reference (Auth, Prediction, Reporting, Password Reset).
-- [Gmail Integration](docs/GMAIL_INTEGRATION.md): Guide to configuring Google OAuth2 for automated inbox scanning.
-- [Enterprise Deployment](docs/ENTERPRISE_DEPLOYMENT.md): MLOps, scalability, zero-trust secrets, and disaster recovery.
-- [CLI Reference](docs/CLI_REFERENCE.md): Command-line toolkit guide for `manage.py` and automation scripts.
-- [ML Training Guide](docs/ML_TRAINING_GUIDE.md): End-to-end model lifecycle, vectorization, and ensemble tuning.
-
----
-
-## Contribute
-
-Contributions are highly welcome! Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) to log setup PRs and get started.
-
-If this project helps you, please consider giving it a star!

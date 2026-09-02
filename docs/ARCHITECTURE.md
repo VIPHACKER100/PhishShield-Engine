@@ -127,7 +127,15 @@ Manages and isolates internal tokens:
   - `password_reset_token_hash` — SHA-256 hash (raw token never stored)
   - `password_reset_expires` — reset token expiry
 
-### 5. Preprocessing & Normalization (`src/preprocessing/`)
+### 5. Input Validation, Sanitization & Anti-Bot Layer (`src/utils/sanitizer.py` + `src/api/schemas.py` + `src/api/app.py`)
+
+- **Central Input Sanitizer**: `sanitize_text()` strips null bytes (`\0`), removes non-printable ASCII control characters, HTML-escapes script tags (`<script>`, `<iframe>`), and truncates text payloads.
+- **Strict Character Constraints**: `validate_username()` enforces `^[a-zA-Z0-9_-]{3,50}$` to neutralize SQL injection and XSS in username parameters.
+- **Bcrypt DoS Protection**: 128-character input limit on all password parameters.
+- **Anti-Bot Middleware**: Rejects empty User-Agents on API routes, blocks blacklisted vulnerability scanners (`sqlmap`, `nikto`), and catches bot traps (`bot_trap` field and `X-Honeypot-Trap` header).
+- **Security Audit Logger**: Structured event logging (`USER_REGISTERED`, `AUTH_SUCCESS`, `AUTH_FAILURE`, `ACCOUNT_LOCKED`, `BOT_ATTACK_BLOCKED`, `RATE_LIMIT_EXCEEDED`) written to `logs/security_audit.log`.
+
+### 6. Preprocessing & Normalization (`src/preprocessing/`)
 
 - **Text Cleaner**: Every raw email is stripped of encoding, normalized to UTF-8 lowercase, and cleaned of extraneous newlines.
 - **Anonymizer**: All PII, including names and email addresses, is replaced with regex placeholders before the string hits threat storage.

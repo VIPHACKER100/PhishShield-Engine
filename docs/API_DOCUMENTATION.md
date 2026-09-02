@@ -13,6 +13,9 @@ Users must register and login to receive a **JSON Web Token (JWT)**, which must 
 | Control | Detail |
 |---------|--------|
 | Password hashing | bcrypt with auto work-factor (`gensalt()`) |
+| Bcrypt DoS protection | Password length capped at **128 characters** |
+| Username regex | Strict pattern `^[a-zA-Z0-9_-]{3,50}$` (alphanumeric, hyphens, underscores only) |
+| Text sanitization | Null bytes (`\0`) stripped; HTML tags escaped (`html.escape`) to eliminate XSS |
 | JWT lifetime | **1 hour** (configurable via `JWT_EXPIRY_HOURS`) |
 | JWT claims | `sub`, `iat`, `exp`, `jti` (unique ID per token) |
 | Account lockout | After **5** consecutive failures, locked for **15 minutes** |
