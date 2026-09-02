@@ -34,15 +34,28 @@ This guide details exactly how you can set up your environment, contribute new f
    pip install -e .
    ```
 
+4. Run database migrations:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+5. Set up `.env` for development testing:
+
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
 ---
 
 ## 2. Project Architecture & Standards
 
-Before writing code, please check our [Architecture Guide](ARCHITECTURE.md) and [Developer Guide](developer_guide.md).
+Before writing code, please check our [Architecture Guide](ARCHITECTURE.md), [API Documentation](API_DOCUMENTATION.md), and [Developer Guide](developer_guide.md).
 
 ### Coding Standards
 
 - **Typing:** We use standard Python type hints (`from typing import Optional, List`). All new functions should have their parameters and return types hinted.
+- **Security & Auth:** Never expose secrets, hardcode JWT keys, or perform non-constant-time comparisons on credentials. Use `src/utils/secrets.py` for config keys and `hmac.compare_digest` for secret string comparisons.
 - **Docstrings:** Use simple, descriptive docstrings for all new methods and classes.
 - **Logging:** Do **not** use `print()`. Use the custom initialized logger:
 
@@ -56,7 +69,7 @@ Before writing code, please check our [Architecture Guide](ARCHITECTURE.md) and 
 
 ## 3. Running the Test Suite
 
-Before opening a pull request, ensure your code doesn't break existing functionality. We use `pytest` for unit testing.
+Before opening a pull request, ensure your code doesn't break existing functionality. We use `pytest` for unit and security testing.
 
 1. **Run All Tests:**
 
@@ -64,7 +77,13 @@ Before opening a pull request, ensure your code doesn't break existing functiona
    pytest tests/ -v
    ```
 
-2. **Run ML Specific Tests:**
+2. **Run Authentication & Security Unit Tests:**
+
+   ```bash
+   pytest tests/test_auth_unit.py -v
+   ```
+
+3. **Run ML Specific Tests:**
    If you modified the AI models in `src/models/`:
 
    ```bash
@@ -72,7 +91,7 @@ Before opening a pull request, ensure your code doesn't break existing functiona
    pytest tests/test_preprocessing.py
    ```
 
-3. Ensure the test suite passes 100%.
+4. Ensure the test suite passes 100%.
 
 ---
 
@@ -115,5 +134,5 @@ We actively review PRs and will try to get back to you within 48 hours. Happy co
 
 ---
 
-**Maintainer**: VIPHACKER100 (Aryan Ahirwar)
-**Last Updated**: 2026-06-23
+**Maintainer**: VIPHACKER100 (Aryan Ahirwar)  
+**Last Updated**: 2026-09-02

@@ -1,10 +1,27 @@
 # PhishShield-Engine: CLI Reference
 
-The **PhishShield-Engine** includes a powerful command-line interface (`cli/manage.py`) to help administrators orchestrate the system without writing code or hitting API endpoints directly.
+The **PhishShield-Engine** includes a powerful command-line interface (`cli/manage.py`) alongside database migration tools to help administrators orchestrate the system without writing code or hitting API endpoints directly.
 
 ---
 
-## 1. Starting the Server
+## 1. Database Migrations (`alembic`)
+
+PhishShield-Engine manages database schema changes (including user tables, security fields, lockout counters, and password reset tokens) via **Alembic**.
+
+```bash
+# Apply all pending migrations to the database
+alembic upgrade head
+
+# Rollback the last applied migration
+alembic downgrade -1
+
+# Show current migration revision
+alembic current
+```
+
+---
+
+## 2. Starting the Server
 
 Quickly spin up the Uvicorn-backed FastAPI application.
 
@@ -20,7 +37,7 @@ python cli/manage.py serve
 
 ---
 
-## 2. Threat Intelligence Management
+## 3. Threat Intelligence Management
 
 Manually inject malicious domains directly into the Threat Intelligence SQLite database. Future API calls processing emails with this domain will be immediately flagged as `SPAM`.
 
@@ -36,7 +53,7 @@ python cli/manage.py block <domain>
 
 ---
 
-## 3. System Metrics
+## 4. System Metrics
 
 Retrieve a real-time summary of the system's threat blocklist and current intelligence states.
 
@@ -65,4 +82,4 @@ While `manage.py` handles primary runtime tasks, the `scripts/` directory operat
 - `python scripts/backup.py`: Creates a timestamped snapshot of models, threat DBs, and configs.
 
 ---
-**Last Updated**: 2026-06-23
+**Last Updated**: 2026-09-02

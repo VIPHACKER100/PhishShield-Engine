@@ -12,18 +12,31 @@ At its core, PhishShield-Engine relies on a multi-stage pipeline where an incomi
 graph TD
     %% Entry points
     A[Client App / Gmail Integration] -->|HTTP POST JSON| B(FastAPI Gateway)
-    
+
     %% Security & Auth
     B --> C{Rate Limiter & Auth}
     C -- Valid --> D[Payload Validation & Sanitization]
     C -- Blocked --> E[429 / 401 Error]
 
-    %% Main Auth Endpoints
-    B -.-> B_Auth[Auth Engine: /register, /login]
+    %% Auth Endpoints (hardened)
+    subgraph AuthEngine[Authentication Engine]
+        B_Reg[POST /auth/register — 3/min limit]
+        B_Login[POST /auth/login — 5/min limit]
+        B_ResetReq[POST /auth/password-reset-request — 3/min]
+        B_Reset[POST /auth/password-reset — 5/min]
+    end
+    B -.-> AuthEngine
+
+    subgraph SecretsVault[Secrets Vault — src/utils/secrets.py]
+        SV1[Env vars — highest priority]
+        SV2[config/secrets.json — lowest priority]
+        SV3[Production guard: refuses to start if JWT_SECRET is weak]
+    end
+    AuthEngine --> SecretsVault
 
     %% Transformation
     D --> F[Text Preprocessor]
-    
+
     %% Twin pipelines
     F -->|Raw Text & Headers| G[Forensic Confidence Scanners]
     F -->|Cleaned Tokens| H[Machine Learning Pipeline]
@@ -50,16 +63,16 @@ graph TD
     %% Aggregation
     Forensics --> I[Risk Aggregator & Scoring]
     MachineLearning --> I
-    
+
     %% Background Jobs & Analytics
     B -- /metrics --> P[Prometheus Scraper]
     B -- /predict --> ARQ[ARQ Redis Workers]
     ARQ -.-> I
-    
+
     %% Output
     I --> J{"SHAP XAI Explanation"}
     J --> K[Final Risk Object]
-    
+
     %% Logging & Storage
     K --> L[(Threat Logging DB)]
     K --> FDB[(Feedback DB: SQLite + CSV)]
@@ -73,32 +86,72 @@ graph TD
 ### 1. API Interface & Traffic Routing (`src/api/`)
 
 - **FastAPI Framework**: Serves as the high-throughput asynchronous gateway. Exposes a native `/metrics` endpoint for **Prometheus** and Grafana dashboards.
-- **Middleware Security**: Intercepts requests to append distinct request IDs (`X-Request-ID`) and implements in-memory, per-IP rate limiting (60 RPM).
+- **Middleware Security**: Intercepts requests to append distinct request IDs (`X-Request-ID`) and implements in-memory, per-IP global rate limiting (60 RPM) via SlowAPI.
 - **Background Jobs**: Heavy ML inference and external email integrations are offloaded to **ARQ**, a Redis-based asynchronous task queue, replacing native BackgroundTasks for better scalability.
-- **Authentication (`auth.py`)**: Uses Python's built-in `bcrypt` for hashed passwords and `PyJWT` for signed tokens. Authenticated via a central **SQLAlchemy ORM**.
 
-### 2. Preprocessing & Normalization (`src/preprocessing/`)
+### 2. Hardened Authentication System (`src/api/auth.py` + `src/api/routers/auth.py`)
 
-- **Text Cleaner**: Every raw email is stripped of encoding, normalized to UTF-8 lowercase, and cleaned of extraneous newlines. High-speed **vectorized operations** handle punctuation and stopword removal, providing 20-50x better performance than traditional row-by-row loops.
-- **Anonymizer**: All PII (Personally Identifiable Information), including specific names and CC-ed email addresses, is dynamically replaced with regex placeholders before the string hits threat storage.
+The authentication layer was fully overhauled with production-grade security controls:
 
-### 3. Forensic Security Scanning (`src/security/`)
+| Control | Implementation |
+|---------|---------------|
+| Password hashing | `bcrypt` with `gensalt()` — auto-selects work factor |
+| JWT signing | `PyJWT` HS256 with `sub`, `iat`, `exp`, `jti` claims |
+| JWT lifetime | **1 hour** (was 24h) — reduces stolen-token exposure window |
+| Secret management | Sourced exclusively from `SecretsVault` — no code-level fallbacks in production |
+| Account lockout | 5 bad attempts → 15-minute lockout (configurable) |
+| User enumeration prevention | Dummy bcrypt check on unknown usernames — uniform response time |
+| API key comparison | `hmac.compare_digest()` — constant-time, prevents timing oracle |
+| Password reset | Single-use, SHA-256-hashed, time-limited (1 hour) tokens |
+| Per-endpoint rate limits | Login: 5/min · Register: 3/min · Reset: 3/min (per IP) |
+| Password policy | 8+ chars + digit + special character |
+| Production startup guard | App refuses to start if `JWT_SECRET` is absent or is the dev placeholder |
 
-This is the deterministic, rules-based engine that acts adjacent to the ML predictors.
+### 3. Secrets Vault (`src/utils/secrets.py`)
 
-- **Homograph Protection**: Checks string buffers against the Latin, Cyrillic, and Greek unicode pools. Flags if a character looks like a standard Latin `A` but resolves to a Cyrillic character visually hiding a malicious domain.
-- **Cyrillic URL Detection**: Explicitly scans extracted URLs for characters in the Cyrillic Unicode block (`[\u0400-\u04FF]`) to catch homograph attacks in raw links.
-- **URL & Zero-width Obfuscation**: Scans for embedded zero-width joiners (`\u200D` or `\u200B`) that attackers insert into body text to bypass spam-filters looking for common keywords.
-- **Brand Intelligence**: Conducts aggressive fuzzy-matching on specific protected brand lists (e.g., Apple, PayPal). Calculates the Levenshtein distance against known safe domains.
+Manages and isolates internal tokens:
 
-### 4. Machine Learning, Storage, & XAI (`src/models/`, `src/features/`)
+- **Priority order** (highest → lowest): OS environment variables → `config/secrets.json`
+- `config/secrets.json` is `.gitignored` to prevent token leakage
+- In production (`ENV=prod`), raises `RuntimeError` at startup if `JWT_SECRET` is missing or equals the known dev placeholder
+- All auth components access secrets via `vault.get("JWT_SECRET")` — the key is never hardcoded
 
-- **Storage & Migrations**: A unified **SQLAlchemy** layer manages all database interactions (Users, Feedback, UsageLogs) via `src.core.database`. Schema updates are version-controlled using **Alembic**.
-- **Deep Learning & Vector Search**: Introduces `DeepLearningModel` backed by HuggingFace Transformers, alongside semantic similarity threat detection via ChromaDB and SentenceTransformers.
-- **Ensemble Structure**: Operates a state-of-the-art `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting.
-- **XAI via SHAP**: Integrates `shap.LinearExplainer` to extract meaningful feature importance metrics for end-users, explaining exact words that triggered the phishing classifier.
-- **Continuous Tuning (`retrain_scheduler.py`)**: A daemon checks the PostgreSQL/SQLite `feedback` table for new records. If a threshold is met, it runs Randomized Search tuning and promotes the best model.
+### 4. Database & Migrations (`src/core/database.py` + `alembic/`)
 
-### 5. Config Governance (`config/config.yaml`)
+- **Storage & Migrations**: A unified **SQLAlchemy** layer manages all database interactions via `src.core.database`. Schema updates are version-controlled using **Alembic**.
+- **Security columns** added to the `users` table (migration `8eb220da558a8768`):
+  - `email` — for password reset delivery
+  - `is_email_verified` — feature flag for future enforcement
+  - `failed_login_attempts` — incremented on bad login, reset on success
+  - `locked_until` — lockout expiry timestamp (UTC)
+  - `password_reset_token_hash` — SHA-256 hash (raw token never stored)
+  - `password_reset_expires` — reset token expiry
 
-Risk thresholds, model tuning grid-search parameters, security flag weights (including `cyrillic_url: 50`), and compliance retention windows are completely decoupled from runtime code. They are fetched from `config.yaml` using the built-in `config_loader` upon app boot.
+### 5. Preprocessing & Normalization (`src/preprocessing/`)
+
+- **Text Cleaner**: Every raw email is stripped of encoding, normalized to UTF-8 lowercase, and cleaned of extraneous newlines.
+- **Anonymizer**: All PII, including names and email addresses, is replaced with regex placeholders before the string hits threat storage.
+
+### 6. Forensic Security Scanning (`src/security/`)
+
+The deterministic, rules-based engine that acts adjacent to the ML predictors:
+
+- **Homograph Protection**: Checks string buffers against Latin, Cyrillic, and Greek Unicode pools.
+- **Cyrillic URL Detection**: Scans extracted URLs for Cyrillic characters (`[\u0400-\u04FF]`).
+- **URL & Zero-width Obfuscation**: Scans for embedded zero-width joiners (`\u200D`, `\u200B`).
+- **Brand Intelligence**: Fuzzy-matching against protected brand lists using Levenshtein distance.
+
+### 7. Machine Learning, Storage, & XAI (`src/models/`, `src/features/`)
+
+- **Deep Learning & Vector Search**: `DeepLearningModel` backed by HuggingFace Transformers, with ChromaDB semantic similarity.
+- **Ensemble Structure**: `scikit-learn` stack combining MNB, calibrated SVM, Logistic Regression, Random Forest, and Gradient Boosting.
+- **XAI via SHAP**: Integrates `shap.LinearExplainer` for per-token feature importance.
+- **Continuous Tuning**: `retrain_scheduler.py` monitors the feedback table and triggers automated model promotion.
+
+### 8. Config Governance (`config/config.yaml`)
+
+Risk thresholds, model tuning parameters, security flag weights, and compliance retention windows are completely decoupled from runtime code.
+
+---
+
+**Last Updated**: 2026-09-02

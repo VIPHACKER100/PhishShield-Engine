@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides exhaustive documentation on the architecture, command-line interfaces, and maintenance procedures for the **PhishShield-Engine** platform.
+This document provides exhaustive documentation on the architecture, command-line interfaces, security subsystems, and maintenance procedures for the **PhishShield-Engine** platform.
 
 ---
 
@@ -16,11 +16,33 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS/Linux
 
-# Install All Dependencies (numpy pinned to 1.26.4 for model compatibility)
+# Install All Dependencies
 pip install -r requirements.txt
+
+# Run Database Migrations
+alembic upgrade head
 ```
 
-### 2. Model Initialization
+### 2. Environment Configuration
+
+Copy `.env.example` to `.env` and set your configuration variables:
+
+```bash
+# Generate a cryptographically strong secret for JWT signing
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+In `.env`:
+```env
+JWT_SECRET=<generated_secret>
+JWT_EXPIRY_HOURS=1
+LOGIN_MAX_ATTEMPTS=5
+LOGIN_LOCKOUT_MINUTES=15
+RESET_TOKEN_EXPIRY_HOURS=1
+ENV=prod
+```
+
+### 3. Model Initialization
 
 You must initialize your models before the first run. For a full deep-dive into the training lifecycle, see the [ML Training Guide](ML_TRAINING_GUIDE.md).
 
@@ -72,9 +94,41 @@ Handles the entire ML lifecycle from raw data to registered production models.
 
 ---
 
-## Security Core Architecture
+## Authentication & Security Subsystems
 
-### 1. Forensic Intelligence Layer
+### 1. Authentication Architecture (`src/api/auth.py`)
+
+- **Password Hashing**: Utilizes `bcrypt` with salt generation (`gensalt()`). Enforces password complexity:
+  - Minimum 8 characters
+  - At least 1 numeric digit
+  - At least 1 special character (`!@#$%^&*...`)
+- **Session & JWT Management**: Issues short-lived JWTs (default 1 hour expiry) with `sub`, `iat`, `exp`, and `jti` claims. Secrets are managed via `SecretsVault` with environment-variable precedence.
+- **Brute-Force Lockout**: Tracks `failed_login_attempts` per user. Reaching 5 failures locks the account for 15 minutes (`locked_until`).
+- **Timing Attack Mitigation**: Employs constant-time string comparison (`hmac.compare_digest`) for API key verification (`pse_` prefix) and executes dummy password hashes for non-existent users.
+- **Password Reset Flow**: `request_password_reset` issues a single-use token (`secrets.token_urlsafe(32)`). Only SHA-256 digests (`password_reset_token_hash`) and expirations (`password_reset_expires`) are stored in the database.
+
+### 2. Rate Limiting (`SlowAPI`)
+
+- `/auth/login`: 5 requests/min per IP
+- `/auth/register`: 3 requests/min per IP
+- `/auth/password-reset-request`: 3 requests/min per IP
+- `/auth/password-reset`: 5 requests/min per IP
+- Global API limit: 60 requests/min per IP
+
+### 3. Database Schema & Migrations (`src/core/database.py`, `alembic/`)
+
+The `users` table includes security governance fields:
+- `username`, `password_hash`, `api_key`
+- `email` (optional, unique)
+- `is_email_verified` (boolean flag)
+- `failed_login_attempts` (integer counter)
+- `locked_until` (datetime)
+- `password_reset_token_hash` (string)
+- `password_reset_expires` (datetime)
+
+Schema revisions are maintained via Alembic (`alembic/versions/8eb220da558a8768_add_auth_security_fields.py`).
+
+### 4. Forensic Intelligence Layer
 
 The `calculate_security_risk` function (in `src/security/risk_scoring.py`) executes 10 independent forensic scans:
 
@@ -89,7 +143,7 @@ The `calculate_security_risk` function (in `src/security/risk_scoring.py`) execu
 * **Behavioral Threat**: Statistical mapping of text-based threat indicators.
 * **Cyrillic URL Spoofing**: Detects Cyrillic characters embedded in URLs (weight: 50).
 
-### 2. Governance-as-Code (`config/config.yaml`)
+### 5. Governance-as-Code (`config/config.yaml`)
 
 Control the engine's behavior without modifying code:
 
@@ -121,57 +175,15 @@ docker-compose up -d
 
 ## Testing & Quality Assurance
 
-* **Unit Tests**: `python -m pytest tests/`
-
+* **Unit & Security Tests**: `python -m pytest tests/` or `python -m pytest tests/test_auth_unit.py -v`
 * **Integration Tests**: `python scripts/chaos_monkey.py` (Simulates failure scenarios)
 * **Compliance Audit**: View `logs/compliance.log` to audit data retention and forensic overrides.
 * **Warning Suppression**: Tests use `tests/conftest.py` to suppress httpx deprecation and LGBM feature name warnings.
 
 ---
 
-## Implementation Roadmap
-
-The evolution of **PhishShield-Engine** followed a phased development roadmap organized into logical layers.
-
-### Phase 1-20: Core Infrastructure & Machine Learning
-
-* **Fundamental NLP**: Implementation of TF-IDF and Bag-of-Words vectorizers.
-* **Ensemble ML**: Training of Naive Bayes, SVM, and Random Forest classifiers.
-* **REST Gateway**: Building the initial FastAPI structure and Pydantic models.
-* **Cinematic UI**: Developing the glassmorphic frontend for user interaction.
-
-### Phase 21-40: Security Foundations & Forensic Scanning
-
-* **URL Intelligence**: Regex-based extraction and basic malicious pattern detection.
-* **Homograph Defense**: Detecting IDN (Internationalized Domain Name) spoofing.
-* **Mixed-Script Detection**: Identifying "lookalike" characters from Latin, Greek, and Cyrillic scripts.
-* **Brand Protection (v1)**: Initial fuzzy-matching for top-tier brands like PayPal and Amazon.
-
-### Phase 41-60: Advanced Phishing Intelligence
-
-* **Header Forensics**: SPF, DKIM, and DMARC analysis for sender authenticity.
-* **Risk Scoring Engine**: Implementation of the 0-100 weighted scoring system.
-* **Explainable AI (XAI)**: Generation of human-readable justifications for security alerts.
-* **Local Threat Hub**: SQLite-backed persistent database for domain blocklisting.
-
-### Phase 61-75: Enterprise Governance & Operations
-
-* **Configuration Management**: Centralized YAML-based settings for security weights.
-* **Data Governance**: GDPR-ready retention policies and persistent audit logging.
-* **Dockerization**: Containerizing the platform for environment parity and deployment.
-* **Developer CLI**: Building the `manage.py` tool for operational productivity.
-
-### Phase 76-80: Resilience, Automation & Final Production
-
-* **Feedback Loop**: Implementing automated logic for model retraining based on live user data.
-* **Chaos Engineering**: Stress-testing system resilience using failure injectors.
-* **Production Verification**: Full-spectrum forensic testing and final brand alignment.
-* **PhishShield Launch**: Rebranding and final stabilization of the production engine.
-
----
-
 ## Maintainer
 
-**VIPHACKER100 (Aryan Ahirwar)**
-*Cybersecurity Researcher | AI Security Lead*
-*Last Updated: 2026-06-23*
+**VIPHACKER100 (Aryan Ahirwar)**  
+*Cybersecurity Researcher | AI Security Lead*  
+*Last Updated: 2026-09-02*
